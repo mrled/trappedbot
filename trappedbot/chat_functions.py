@@ -26,7 +26,6 @@ async def send_text_to_room(
     message,
     notice=True,
     markdown_convert=True,
-    formatted=True,
     code=False,
     split=None,
 ):
@@ -45,9 +44,6 @@ async def send_text_to_room(
 
     markdown_convert (bool): Whether to convert the message content
         to markdown. Defaults to true.
-
-    formatted (bool): whether message should be sent as formatted message.
-        Defaults to True.
 
     code (bool): whether message should be sent as code block with
         fixed-size font.
@@ -77,10 +73,8 @@ async def send_text_to_room(
         content = {
             "msgtype": msgtype,
             "body": message,
+            "format": "org.matrix.custom.html",
         }
-
-        if formatted:
-            content["format"] = "org.matrix.custom.html"
 
         if code:
             content["formatted_body"] = "<pre><code>" + message + "\n</code></pre>\n"

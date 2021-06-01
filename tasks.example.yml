@@ -1,0 +1,21 @@
+---
+
+tasks:
+  uptime:
+    systemcmd: uptime
+    help: Shows uptime for the server runnig the bot
+    format: code
+    allow_untrusted: yes
+  whoami:
+    systemcmd: whoami
+    help: Shows the Unix user that the bot is running under
+    allow_untrusted: yes
+  hostname:
+    systemcmd: hostname
+    help: Shows the hostname for the server where the bot is running
+    allow_untrusted: yes
+  date:
+    systemcmd: date
+    help: Shows the date according to the server where the bot is running
+    format: code
+    allow_untrusted: yes

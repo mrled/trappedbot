@@ -1,0 +1,26 @@
+command_prefix: "wish"
+
+matrix:
+  user_id: "@bot:example.com"
+  user_password: "asdf1234qwer0987/.,m"
+  # Provide this and remove the password
+  # access_token: "PutYourLongAccessTokenHere"
+
+  homeserver_url: https://matrix.example.com
+  device_id: TESTDEVICE
+  device_name: eno
+  trust_own_devices: true
+  change_device_name: true
+
+storage:
+  database_filepath: "/path/to/trappedbot/bot.db"
+  store_filepath: "/path/to/trappedbot/store"
+  task_dict_filepath: "/path/to/trappedbot/tasks.yml"
+
+logging:
+  level: DEBUG
+  file_logging:
+    enabled: false
+    filepath: /dev/null
+  console_logging:
+    enabled: true

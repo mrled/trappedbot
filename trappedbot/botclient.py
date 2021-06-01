@@ -21,7 +21,7 @@ from trappedbot.config import Config
 from trappedbot.storage import Storage
 
 
-async def bot(configpath: str):
+async def botloop(configpath: str):
     """The bot client itself"""
 
     config = Config(configpath)
@@ -86,7 +86,7 @@ async def bot(configpath: str):
                 # There's an edge case here where the user hasn't installed
                 # the correct C dependencies. In that case, a
                 # LocalProtocolError is raised on login.
-                trappedbot.LOGGER.fatal(
+                trappedbot.LOGGER.critical(
                     "Failed to login. "
                     "Have you installed the correct dependencies? "
                     "https://github.com/poljar/matrix-nio#installation "
@@ -108,7 +108,7 @@ async def bot(configpath: str):
                 content = {"display_name": config.device_name}
                 resp = await client.update_device(config.device_id, content)
                 if isinstance(resp, UpdateDeviceError):
-                    trappedbot.LOGGER.debug(f"update_device failed with {resp}")
+                    trappedbot.LOGGER.critical(f"update_device failed with {resp}")
                 else:
                     trappedbot.LOGGER.debug(f"update_device successful with {resp}")
 
@@ -119,15 +119,11 @@ async def bot(configpath: str):
                 for device_id, olm_device in client.device_store[
                     config.user_id
                 ].items():
-                    trappedbot.LOGGER.debug(
-                        "My other devices are: "
-                        f"device_id={device_id}, "
-                        f"olm_device={olm_device}."
+                    trappedbot.LOGGER.info(
+                        f"My other devices are: device_id={device_id}, olm_device={olm_device}."
                     )
                     trappedbot.LOGGER.info(
-                        "Setting up trust for my own "
-                        f"device {device_id} and session key "
-                        f"{olm_device.keys['ed25519']}."
+                        f"Setting up trust for my own device {device_id} and session key {olm_device.keys['ed25519']}."
                     )
                     client.verify_device(olm_device)
 

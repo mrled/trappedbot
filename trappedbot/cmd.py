@@ -2,17 +2,17 @@
 
 import argparse
 import asyncio
-import importlib
 import logging
 import os
 import sys
 import traceback
 import typing
+from importlib.metadata import version
 
 import trappedbot
 from trappedbot import util
 
-# from trappedbot.botclient import bot
+from trappedbot.botclient import botloop
 
 
 def ExistingResolvedPath(path):
@@ -65,22 +65,22 @@ def main(arguments: typing.List[str] = sys.argv[1:]):
     if parsed.action == "version":
         print(
             "Trapped in a Matrix server, send help! Version {}".format(
-                importlib.metadata.version("trappedbot")
+                version("trappedbot")
             )
         )
         sys.exit(0)
 
-    # elif parsed.action == "bot":
-    #     try:
-    #         asyncio.get_event_loop().run_until_complete(bot(parsed.configpath))
-    #     except KeyboardInterrupt:
-    #         trappedbot.LOGGER.debug("Received keyboard interrupt, exiting...")
-    #         sys.exit(0)
-    #     except Exception as exc:
-    #         trappedbot.LOGGER.error(
-    #             f"Encountered exception: {exc}\nTraceback:\n{traceback.format_exc()}"
-    #         )
-    #         sys.exit(1)
+    elif parsed.action == "bot":
+        try:
+            asyncio.get_event_loop().run_until_complete(botloop(parsed.configpath))
+        except KeyboardInterrupt:
+            trappedbot.LOGGER.debug("Received keyboard interrupt, exiting...")
+            sys.exit(0)
+        except Exception as exc:
+            trappedbot.LOGGER.error(
+                f"Encountered exception: {exc}\nTraceback:\n{traceback.format_exc()}"
+            )
+            sys.exit(1)
 
     else:
         raise Exception(f"Unknown action {parsed.action}")

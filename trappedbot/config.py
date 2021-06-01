@@ -72,15 +72,20 @@ class Config(object):
             trappedbot.LOGGER.addHandler(handler)
 
         # Storage setup
-        self.database_filepath = self._get_cfg(
-            os.path.abspath(["storage", "database_filepath"]), required=True
+        self.database_filepath = os.path.abspath(
+            self._get_cfg(["storage", "database_filepath"], required=True)
         )
-        self.store_filepath = self._get_cfg(
-            os.path.abspath(["storage", "store_filepath"]), required=True
+        self.store_filepath = os.path.abspath(
+            self._get_cfg(["storage", "store_filepath"], required=True)
         )
-        self.command_dict_filepath = self._get_cfg(
-            os.path.abspath(["storage", "command_dict_filepath"]), default=None
+        self.task_dict_filepath = os.path.abspath(
+            self._get_cfg(["storage", "task_dict_filepath"], default=None)
         )
+
+        if not os.path.exists(self.task_dict_filepath):
+            raise ConfigError(
+                f"No tasks file at configured path {self.task_dict_filepath}"
+            )
 
         # Create the store folder
         os.makedirs(self.store_filepath, exist_ok=True)
@@ -116,6 +121,9 @@ class Config(object):
         self.change_device_name = self._get_cfg(
             ["matrix", "change_device_name"], default=False, required=False
         )
+
+        # Trusted user setup
+        self.trusted_users = self._get_cfg(["matrix", "trusted_users"], required=False)
 
     def _get_cfg(
         self,

@@ -16,7 +16,7 @@ Set up an 'editable' environment:
 python3 -m venv venv
 . venv/bin/activate
 pip install --upgrade pip # optional
-pip install build
+pip install build mypy black types-PyYAML
 pip install -e .
 ```
 

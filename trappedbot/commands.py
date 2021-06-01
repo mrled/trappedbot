@@ -9,80 +9,106 @@ example commands.
 
 import os
 import re
+import shlex
 import subprocess
 import traceback
+import typing
+
+from nio import AsyncClient
+from nio.events.room_events import RoomMessageText
+from nio.rooms import MatrixRoom
 
 import trappedbot
+from trappedbot import mxutil
 from trappedbot.chat_functions import send_text_to_room
-
-
-SERVER_ERROR_MSG = "Bot encountered an error. Here is the stack trace: \n"
+from trappedbot.config import Config
+from trappedbot.taskdict import TaskDict, TaskOutputFormat
+from trappedbot.storage import Storage
 
 
 class Command(object):
     """Use this class for your bot commands."""
 
-    def __init__(self, client, store, config, command_dict, command, room, event):
+    def __init__(
+        self,
+        client: AsyncClient,
+        store: Storage,
+        config: Config,
+        taskdict: TaskDict,
+        command: str,
+        room: MatrixRoom,
+        event: RoomMessageText,
+    ):
         """Set up bot commands.
 
         Arguments:
         ---------
-            client (nio.AsyncClient): The client to communicate with Matrix
-            store (Storage): Bot storage
-            config (Config): Bot configuration parameters
-            command_dict (CommandDict): Command dictionary
-            command (str): The command and arguments
-            room (nio.rooms.MatrixRoom): The room the command was sent in
-            event (nio.events.room_events.RoomMessageText): The event
-                describing the command
-
+            client: The client to communicate with Matrix
+            store: Bot storage
+            config: Bot configuration parameters
+            tasks: Tasks dictionary
+            command: The command and arguments
+            room: The room the command was sent in
+            event: The event describing the command
         """
         self.client = client
         self.store = store
         self.config = config
-        self.command_dict = command_dict
+        self.taskdict = taskdict
         self.command = command
+        self.args = shlex.split(command)[1:]
         self.room = room
         self.event = event
-        # self.args: list : list of arguments
-        self.args = re.findall(r'(?:[^\s,"]|"(?:\\.|[^"])*")+', self.command)[1:]
-        # will work for double quotes "
-        # will work for 'a bb ccc "e e"' --> ['a', 'bb', 'ccc', '"e e"']
-        # will not work for single quotes '
-        # will not work for "a bb ccc 'e e'" --> ['a', 'bb', 'ccc', "'e", "e'"]
-        self.commandlower = self.command.lower()
 
-    async def process(self):  # noqa
+    async def process(self):
         """Process the command."""
 
         trappedbot.LOGGER.debug(
-            f"bot_commands :: Command.process: {self.command} {self.room}"
+            f"commands :: Command.process: {self.command} {self.room}"
         )
 
         if re.match(
             "^help$|^ayuda$|^man$|^manual$|^hilfe$|"
             "^je suis perdu$|^perdu$|^socorro$|^h$|"
             "^rescate$|^rescate .*|^help .*|^help.sh$",
-            self.commandlower,
+            self.command.lower(),
         ):
             await self._show_help()
+            return
 
-        # command from command dict
-        elif self.command_dict.match(self.commandlower):
-            matched_cmd = self.command_dict.get_last_matched_command()
-            await self._os_cmd(
-                cmd=self.command_dict.get_cmd(matched_cmd),
-                args=self.args,
-                markdown_convert=self.command_dict.get_opt_markdown_convert(
-                    matched_cmd
-                ),
-                formatted=self.command_dict.get_opt_formatted(matched_cmd),
-                code=self.command_dict.get_opt_code(matched_cmd),
-                split=self.command_dict.get_opt_split(matched_cmd),
-            )
-
-        else:
+        task = self.taskdict.find(self.command.lower())
+        if not task:
             await self._unknown_command()
+            return
+
+        sender = mxutil.Mxid.fromstr(self.event.sender)
+        if task.allow_untrusted:
+            trappedbot.LOGGER.debug(
+                f"Processing command {self.command} from sender {sender.mxid} because the invoked task {task.name} allows untrusted invocation"
+            )
+        elif sender.homeserver in task.allow_homeservers:
+            trappedbot.LOGGER.debug(
+                f"Processing command {self.command} from sender {sender.mxid} because the invoked task {task.name} allows users from homeserver {sender.homeserver}"
+            )
+        elif sender.mxid in task.allow_users:
+            trappedbot.LOGGER.debug(
+                f"Processing command {self.command} from sender {sender.mxid} because the invoked task {task.name} allows that user explicitly"
+            )
+        else:
+            trappedbot.LOGGER.critical(
+                f"Refusing to process command {self.command} from sender {sender.mxid} because the invoked task {task.name} does not permit execution by this user"
+            )
+            # TODO: Have the bot reply when this happens
+            return
+
+        await self._os_cmd(
+            cmd=task.systemcmd,
+            args=self.args,
+            markdown_convert=task.format == TaskOutputFormat.MARKDOWN,
+            code=task.format == TaskOutputFormat.CODE,
+            split=task.split,
+        )
+        return
 
     async def _show_help(self):
         """Show the help text."""
@@ -96,30 +122,27 @@ class Command(object):
             return
 
         topic = self.args[0]
+
         if topic == "rules":
             response = "These are the rules: Act responsibly."
 
         elif topic == "commands" or topic == "all":
-            if not self.command_dict.is_empty():
-                response = "Available commands:\n"
-                for icom in self.command_dict:
-                    response += f"\n- {icom}: {self.command_dict.get_help(icom)}"
-                await send_text_to_room(
-                    self.client,
-                    self.room.room_id,
-                    response,
-                    markdown_convert=True,
-                    formatted=True,
-                    code=False,
-                    split=None,
-                )
-
-            else:
-                response = "Your command dictionary seems to be empty!"
-
+            response = "Available commands:\n"
+            for tname, task in self.taskdict.tasks.items():
+                response += f"\n- {tname}: {task.help}"
+            await send_text_to_room(
+                self.client,
+                self.room.room_id,
+                response,
+                markdown_convert=True,
+                code=False,
+                split=None,
+            )
             return
+
         else:
             response = f"Unknown help topic `{topic}`!"
+
         await send_text_to_room(self.client, self.room.room_id, response)
 
     async def _unknown_command(self):
@@ -137,7 +160,6 @@ class Command(object):
         cmd: str,
         args: list,
         markdown_convert=True,
-        formatted=True,
         code=False,
         split=None,
     ):
@@ -158,7 +180,6 @@ class Command(object):
         args (list): list of arguments
             Valid example: [ '--verbose', '--abc', '-d="hello world"']
         markdown_convert (bool): value for how to format response
-        formatted (bool): value for how to format response
         code (bool): value for how to format response
         """
         try:
@@ -199,7 +220,10 @@ class Command(object):
                 )
             response = output
         except Exception:
-            response = SERVER_ERROR_MSG + traceback.format_exc()
+            response = (
+                "Bot encountered an error. Here is the stack trace: \n"
+                + traceback.format_exc()
+            )
             code = True  # format stack traces as code
         trappedbot.LOGGER.debug(f"Sending this reply back: {response}")
         await send_text_to_room(
@@ -207,10 +231,6 @@ class Command(object):
             self.room.room_id,
             response,
             markdown_convert=markdown_convert,
-            formatted=formatted,
             code=code,
             split=split,
         )
-
-
-# EOF

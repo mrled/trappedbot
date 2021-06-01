@@ -16,11 +16,32 @@ from nio import (
     ToDeviceError,
     LocalProtocolError,
 )
+from nio.rooms import MatrixRoom
+from nio.events.room_events import RoomMessageText
 
 import trappedbot
-from trappedbot.bot_commands import Command
-from trappedbot.command_dict import CommandDict
-from trappedbot.message_responses import Message
+from trappedbot.commands import Command
+from trappedbot.taskdict import TaskDict
+
+
+# TODO: Consider NOT logging message contents unless passing some kind of --really-log-messages flag or something
+def msglog(logline: str, room: MatrixRoom, event: RoomMessageText):
+    """Log a line with room name/user/message metadata"""
+    trappedbot.LOGGER.debug(
+        f"{logline} % {room.display_name} | {room.user_name(event.sender)}: {event.body}"
+    )
+
+
+def in_dms(room: MatrixRoom) -> bool:
+    """Are we in DMs, or in a larger room?
+
+    TODO: is there a better way to determine this?
+    """
+    # room.is_group is often a DM, but not always.
+    # room.is_group does not allow room aliases
+    # room.member_count > 2 ... we assume a public room
+    # room.member_count <= 2 ... we assume a DM
+    return room.member_count <= 2
 
 
 class Callbacks(object):
@@ -38,7 +59,7 @@ class Callbacks(object):
         self.client = client
         self.store = store
         self.config = config
-        self.command_dict = CommandDict(config.command_dict_filepath)
+        self.taskdict = TaskDict(config.task_dict_filepath)
         self.command_prefix = config.command_prefix
 
     async def message(self, room, event):
@@ -51,38 +72,25 @@ class Callbacks(object):
                 defining the message
 
         """
-        # Extract the message text
-        msg = event.body
 
-        # Ignore messages from ourselves
+        if event.body.startswith(self.command_prefix):
+            has_command_prefix = True
+            msg = event.body[len(self.command_prefix) :]
+        else:
+            has_command_prefix = False
+            msg = event.body
+
         if event.sender == self.client.user:
+            msglog("Ignoring message from myself", room, event)
             return
-
-        trappedbot.LOGGER.debug(
-            f"Bot message received for room {room.display_name} | "
-            f"{room.user_name(event.sender)}: {msg}"
-        )
-
-        # Process as message if in a public room without command prefix
-        has_command_prefix = msg.startswith(self.command_prefix)
-        # room.is_group is often a DM, but not always.
-        # room.is_group does not allow room aliases
-        # room.member_count > 2 ... we assume a public room
-        # room.member_count <= 2 ... we assume a DM
-        if not has_command_prefix and room.member_count > 2:
-            # General message listener
-            message = Message(self.client, self.store, self.config, msg, room, event)
-            await message.process()
+        elif not has_command_prefix and not in_dms(room):
+            msglog("Ignoring message without prefix in multi-user room", room, event)
             return
-
-        # Otherwise if this is in a 1-1 with the bot or features a command
-        # prefix, treat it as a command
-        if has_command_prefix:
-            # Remove the command prefix
-            msg = msg[len(self.command_prefix) :]
+        else:
+            msglog("Handling message", room, event)
 
         command = Command(
-            self.client, self.store, self.config, self.command_dict, msg, room, event
+            self.client, self.store, self.config, self.taskdict, msg, room, event
         )
         await command.process()
 

@@ -57,6 +57,7 @@ def command2taskfunc(cmd: str) -> TaskFunction:
 
         env = os.environ.copy()
         env["MATRIX_SENDER"] = context.sender
+        env["MATRIX_ROOM"] = context.room
 
         proc = subprocess.Popen(
             fullcmd,

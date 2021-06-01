@@ -22,7 +22,7 @@ import trappedbot
 from trappedbot import mxutil
 from trappedbot.chat_functions import send_text_to_room
 from trappedbot.config import Config
-from trappedbot.taskdict import TaskDict, TaskOutputFormat
+from trappedbot.taskdict import TaskDict, TaskMessageContext, TaskOutputFormat
 from trappedbot.storage import Storage
 
 
@@ -109,8 +109,9 @@ class Command(object):
             )
             return
 
+        taskctx = TaskMessageContext(self.event.sender, self.room.room_id)
         try:
-            result = task.action(self.args)
+            result = task.action(self.args, taskctx)
             markdown_convert = task.format == TaskOutputFormat.MARKDOWN
             code = task.format == TaskOutputFormat.CODE
             split = task.split
@@ -123,7 +124,7 @@ class Command(object):
             # Always format errors in a code block
             code = True
             split = None
-            trappedbot.LOGGER.debig(
+            trappedbot.LOGGER.debug(
                 f"Task {task.name} encountered an error; replying with error:\n{result}"
             )
 

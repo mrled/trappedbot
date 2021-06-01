@@ -18,6 +18,7 @@ from nio import SendRetryError, UploadResponse
 from PIL import Image
 
 import trappedbot
+from trappedbot.mxutil import MessageFormat
 
 
 async def send_text_to_room(
@@ -25,8 +26,7 @@ async def send_text_to_room(
     room_id,
     message,
     notice=True,
-    markdown_convert=True,
-    code=False,
+    format=MessageFormat.NATURAL,
     split=None,
 ):
     """Send text to a matrix room.
@@ -73,15 +73,20 @@ async def send_text_to_room(
         content = {
             "msgtype": msgtype,
             "body": message,
-            "format": "org.matrix.custom.html",
         }
-
-        if code:
+        if format == MessageFormat.FORMATTED:
+            content["format"] = "org.matrix.custom.html"
+            content["formatted_body"] = message
+        elif format == MessageFormat.MARKDOWN:
+            content["format"] = "org.matrix.custom.html"
+            content["formatted_body"] = markdown(message)
+        elif format == MessageFormat.CODE:
+            content["format"] = "org.matrix.custom.html"
             content["formatted_body"] = "<pre><code>" + message + "\n</code></pre>\n"
             # next line: work-around for Element on Android
             content["body"] = "```\n" + message + "\n```"  # to format it as code
-        elif markdown_convert:
-            content["formatted_body"] = markdown(message)
+        else:
+            pass
 
         try:
             await client.room_send(

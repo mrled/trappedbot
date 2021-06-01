@@ -1,5 +1,6 @@
 """Matrix utilities for trappedbot"""
 
+import enum
 import re
 
 
@@ -32,3 +33,18 @@ class Mxid(object):
         if not username or not homeserver:
             raise InvalidMxidError(mxid)
         return Mxid(username, homeserver)
+
+
+class MessageFormat(enum.Enum):
+    """Format for sending messages
+
+    NATURAL:    Default
+    FORMATTED:  Pre-formatted as org.matrix.custom.html
+    MARKDOWN:   Command output is markdown, so convert to HTML before sending to Matrix
+    CODE:       Send command output in fixed-width <pre><code> block
+    """
+
+    NATURAL = enum.auto()
+    FORMATTED = enum.auto()
+    MARKDOWN = enum.auto()
+    CODE = enum.auto()

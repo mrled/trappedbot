@@ -1,7 +1,6 @@
 """Task dictionary
 """
 
-import enum
 import os
 import re
 import subprocess
@@ -10,6 +9,7 @@ import typing
 import yaml
 
 import trappedbot
+from trappedbot.mxutil import MessageFormat
 
 
 class TaskDefinitionException(BaseException):
@@ -19,19 +19,6 @@ class TaskDefinitionException(BaseException):
 
     def __str__(self):
         return f"Error defining task {self.taskname}: {self.msg}"
-
-
-class TaskOutputFormat(enum.Enum):
-    """Format for sending command output
-
-    NATURAL:    Default
-    MARKDOWN:   Command output is markdown, so convert to HTML before sending to Matrix
-    CODE:       Send command output in fixed-width <pre><code> block
-    """
-
-    NATURAL = enum.auto()
-    MARKDOWN = enum.auto()
-    CODE = enum.auto()
 
 
 class TaskMessageContext(typing.NamedTuple):
@@ -93,7 +80,7 @@ class Task(object):
                                 Arguments to the command are passed on the commandline.
                                 May not be specified with taskfunc.
         help:                   Help text for the user
-        format:                 A value from TaskOutputFormat enum
+        format:                 A value from mxutil.MessageFormat enum
         split:                  If set, split with this value
         allow_untrusted:        Allow ALL users ANYWHERE to run this task. BE CAREFUL!
                                 If true, will allow any user regardless of other allow_* settings.
@@ -108,7 +95,7 @@ class Task(object):
         systemcmd: typing.Optional[str] = None,
         regex: typing.Optional[str] = None,
         help: str = "No help defined for this command",
-        format: TaskOutputFormat = TaskOutputFormat.NATURAL,
+        format: MessageFormat = MessageFormat.NATURAL,
         split: typing.Optional[str] = None,
         allow_untrusted: bool = False,
         allow_homeservers: typing.Optional[typing.List[str]] = None,

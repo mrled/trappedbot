@@ -19,7 +19,7 @@ import trappedbot
 from trappedbot import mxutil
 from trappedbot.chat_functions import send_text_to_room
 from trappedbot.config import Config
-from trappedbot.taskdict import TaskDict, TaskMessageContext, TaskOutputFormat
+from trappedbot.taskdict import TaskDict, TaskMessageContext
 from trappedbot.storage import Storage
 
 
@@ -52,8 +52,14 @@ class Command(object):
         self.store = store
         self.config = config
         self.taskdict = taskdict
-        self.command = command
-        self.args = shlex.split(command)[1:]
+
+        # Split the command into arguments, and always user lower case for the command name
+        # (No reason to allow commands like 'host' and 'Host' to be different, right?)
+        cmdsplit = shlex.split(command)
+        cmdsplit[0] = cmdsplit[0].lower()
+
+        self.rawcmd = command
+        self.cmdsplit = cmdsplit
         self.room = room
         self.event = event
 
@@ -61,19 +67,19 @@ class Command(object):
         """Process the command."""
 
         trappedbot.LOGGER.debug(
-            f"commands :: Command.process: {self.command} {self.room}"
+            f"commands :: Command.process: {self.rawcmd} {self.room}"
         )
 
         if re.match(
             "^help$|^ayuda$|^man$|^manual$|^hilfe$|"
             "^je suis perdu$|^perdu$|^socorro$|^h$|"
             "^rescate$|^rescate .*|^help .*|^help.sh$",
-            self.command.lower(),
+            self.cmdsplit[0],
         ):
             await self._show_help()
             return
 
-        task = self.taskdict.find(self.command.lower())
+        task = self.taskdict.find(self.cmdsplit[0])
         if not task:
             await self._unknown_command()
             return
@@ -81,44 +87,41 @@ class Command(object):
         sender = mxutil.Mxid.fromstr(self.event.sender)
         if task.allow_untrusted:
             trappedbot.LOGGER.debug(
-                f"Processing command {self.command} from sender {sender.mxid} because the invoked task {task.name} allows untrusted invocation"
+                f"Processing command {self.rawcmd} from sender {sender.mxid} because the invoked task {task.name} allows untrusted invocation"
             )
         elif sender.homeserver in task.allow_homeservers:
             trappedbot.LOGGER.debug(
-                f"Processing command {self.command} from sender {sender.mxid} because the invoked task {task.name} allows users from homeserver {sender.homeserver}"
+                f"Processing command {self.rawcmd} from sender {sender.mxid} because the invoked task {task.name} allows users from homeserver {sender.homeserver}"
             )
         elif sender.mxid in task.allow_users:
             trappedbot.LOGGER.debug(
-                f"Processing command {self.command} from sender {sender.mxid} because the invoked task {task.name} allows that user explicitly"
+                f"Processing command {self.rawcmd} from sender {sender.mxid} because the invoked task {task.name} allows that user explicitly"
             )
         else:
             trappedbot.LOGGER.critical(
-                f"Refusing to process command {self.command} from sender {sender.mxid} because the invoked task {task.name} does not permit execution by this user"
+                f"Refusing to process command {self.rawcmd} from sender {sender.mxid} because the invoked task {task.name} does not permit execution by this user"
             )
             await send_text_to_room(
                 self.client,
                 self.room.room_id,
                 "Not authorized: User {sender.mxid} is not authorized to run the task {task.name}",
-                markdown_convert=False,
-                code=False,
+                format=mxutil.MessageFormat.NATURAL,
                 split=None,
             )
             return
 
         taskctx = TaskMessageContext(self.event.sender, self.room.room_id)
         try:
-            result = task.action(self.args, taskctx)
-            markdown_convert = task.format == TaskOutputFormat.MARKDOWN
-            code = task.format == TaskOutputFormat.CODE
+            result = task.action(self.cmdsplit[1:], taskctx)
+            format = task.format
             split = task.split
             trappedbot.LOGGER.debug(
                 f"Task {task.name} completed successfully; replying with result:\n{result}"
             )
         except BaseException as exc:
             result = f"Error:\n{exc}\n{traceback.format_exc()}"
-            markdown_convert = False
             # Always format errors in a code block
-            code = True
+            format = mxutil.MessageFormat.CODE
             split = None
             trappedbot.LOGGER.debug(
                 f"Task {task.name} encountered an error; replying with error:\n{result}"
@@ -128,14 +131,13 @@ class Command(object):
             self.client,
             self.room.room_id,
             result,
-            markdown_convert=markdown_convert,
-            code=code,
+            format=format,
             split=split,
         )
 
     async def _show_help(self):
         """Show the help text."""
-        if not self.args:
+        if len(self.cmdsplit) == 1:
             response = (
                 "Hello, I am your bot! "
                 "Use `help all` or `help commands` to view "
@@ -144,7 +146,7 @@ class Command(object):
             await send_text_to_room(self.client, self.room.room_id, response)
             return
 
-        topic = self.args[0]
+        topic = self.cmdsplit[1]
 
         if topic == "rules":
             response = "These are the rules: Act responsibly."
@@ -157,8 +159,7 @@ class Command(object):
                 self.client,
                 self.room.room_id,
                 response,
-                markdown_convert=True,
-                code=False,
+                format=mxutil.MessageFormat.MARKDOWN,
                 split=None,
             )
             return
@@ -172,8 +173,6 @@ class Command(object):
         await send_text_to_room(
             self.client,
             self.room.room_id,
-            (
-                f"Unknown command `{self.command}`. "
-                "Try the `help` command for more information."
-            ),
+            f"Unknown command `{self.rawcmd}`. Try the `help` command for more information.",
+            format=mxutil.MessageFormat.MARKDOWN,
         )

@@ -7,12 +7,9 @@ and `whoami`? Have a close look at them and style your commands after these
 example commands.
 """
 
-import os
 import re
 import shlex
-import subprocess
 import traceback
-import typing
 
 from nio import AsyncClient
 from nio.events.room_events import RoomMessageText
@@ -99,8 +96,7 @@ class Command(object):
                 f"Refusing to process command {self.command} from sender {sender.mxid} because the invoked task {task.name} does not permit execution by this user"
             )
             await send_text_to_room(
-                self,
-                client,
+                self.client,
                 self.room.room_id,
                 "Not authorized: User {sender.mxid} is not authorized to run the task {task.name}",
                 markdown_convert=False,

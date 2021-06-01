@@ -17,14 +17,13 @@ from aiohttp import ServerDisconnectedError, ClientConnectionError
 
 import trappedbot
 from trappedbot.callbacks import Callbacks
-from trappedbot.config import Config
 from trappedbot.storage import Storage
 
 
-async def botloop(configpath: str):
+async def botloop():
     """The bot client itself"""
 
-    config = Config(configpath)
+    config = trappedbot.APPCONFIG
     store = Storage(config.database_filepath)
 
     client_config = AsyncClientConfig(
@@ -42,7 +41,7 @@ async def botloop(configpath: str):
         config=client_config,
     )
 
-    callbacks = Callbacks(client, store, config)
+    callbacks = Callbacks(client, store)
     client.add_event_callback(callbacks.message, (RoomMessageText,))
     client.add_event_callback(callbacks.invite, (InviteMemberEvent,))
     client.add_to_device_callback(callbacks.to_device_cb, (KeyVerificationEvent,))
@@ -50,14 +49,14 @@ async def botloop(configpath: str):
     while True:
         try:
             try:
-                if config.access_token:
+                if config.user_access_token:
                     trappedbot.LOGGER.debug(
                         "Using access token from config file to log in."
                     )
                     client.restore_login(
                         user_id=config.user_id,
                         device_id=config.device_id,
-                        access_token=config.access_token,
+                        access_token=config.user_access_token,
                     )
 
                 else:

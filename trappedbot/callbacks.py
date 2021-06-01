@@ -20,7 +20,7 @@ from nio.rooms import MatrixRoom
 from nio.events.room_events import RoomMessageText
 
 import trappedbot
-from trappedbot.builtin_tasks import BUILTIN_TASKS
+from trappedbot.tasks import BUILTIN_TASKS
 from trappedbot.commands import Command
 from trappedbot.taskdict import TaskDict
 
@@ -48,22 +48,20 @@ def in_dms(room: MatrixRoom) -> bool:
 class Callbacks(object):
     """Collection of all callbacks."""
 
-    def __init__(self, client, store, config):
+    def __init__(self, client, store):
         """Initialize.
 
         Arguments:
         ---------
             client (nio.AsyncClient): nio client used to interact with matrix
             store (Storage): Bot storage
-            config (Config): Bot configuration parameters
         """
         self.client = client
         self.store = store
-        self.config = config
-        self.taskdict = TaskDict(config.task_dict_filepath)
+        self.taskdict = TaskDict(trappedbot.APPCONFIG.task_dict_filepath)
         for task in BUILTIN_TASKS:
             self.taskdict.tasks[task.name] = task
-        self.command_prefix = config.command_prefix
+        self.command_prefix = trappedbot.APPCONFIG.command_prefix
 
     async def message(self, room, event):
         """Handle an incoming message event.
@@ -92,9 +90,7 @@ class Callbacks(object):
         else:
             msglog("Handling message", room, event)
 
-        command = Command(
-            self.client, self.store, self.config, self.taskdict, msg, room, event
-        )
+        command = Command(self.client, self.store, self.taskdict, msg, room, event)
         await command.process()
 
     async def invite(self, room, event):

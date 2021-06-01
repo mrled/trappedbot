@@ -6,14 +6,51 @@
 - performing the according initialization and set-up
 """
 
+import json
 import logging
-import re
 import os
-import yaml
+import re
 import sys
-from typing import List, Any
+import typing
 
-import trappedbot
+import yaml
+
+
+class AppConfig(typing.NamedTuple):
+    """Application configuration"""
+
+    configuration: typing.Dict = {}
+    config_filepath: str = ""
+    database_filepath: str = ""
+    store_filepath: str = ""
+    task_dict_filepath: str = ""
+    user_id: str = ""
+    user_password: str = ""
+    user_access_token: str = ""
+    device_id: str = ""
+    device_name: str = ""
+    homeserver_url: str = ""
+    trust_own_devices: bool = False
+    change_device_name: bool = False
+    command_prefix: str = ""
+    trusted_users: typing.List[str] = []
+
+    def extension(self, section: str, setting: str):
+        """Retrieve an extension from the config
+
+        Allows users to store any setting in our app config and reference it in custom tasks
+        """
+        value = (
+            self.configuration.get("extension", {}).get(section, {}).get(setting, None)
+        )
+        if not value:
+            raise ConfigError(
+                f"Config file does not contain /extension/{section}/{setting}"
+            )
+        return value
+
+    def __str__(self):
+        return json.dumps(self._asdict())
 
 
 class ConfigError(RuntimeError):
@@ -28,126 +65,75 @@ class ConfigError(RuntimeError):
         super(ConfigError, self).__init__("%s" % (msg,))
 
 
-class Config(object):
-    """Handle config file."""
+def parse_config(filepath: str) -> typing.Tuple[AppConfig, logging.Logger]:
+    """Parse a config file
 
-    def __init__(self, filepath):
-        """Initialize.
+    Return a tuple of an AppConfig object and a Logger
+    """
+    filepath = os.path.abspath(filepath)
+    if not os.path.isfile(filepath):
+        raise ConfigError(f"Config file '{filepath}' does not exist")
 
-        Arguments:
-            filepath (str): Path to config file
-        """
-        if not os.path.isfile(filepath):
-            raise ConfigError(f"Config file '{filepath}' does not exist")
+    with open(filepath) as f:
+        configuration = yaml.safe_load(f.read())
 
-        # Load in the config file at the given filepath
-        with open(filepath) as file_stream:
-            self.config = yaml.safe_load(file_stream.read())
+    # Logging setup
+    formatter = logging.Formatter("%(asctime)s | %(name)s [%(levelname)s] %(message)s")
+    log_level = configuration["logging"].get("level", "INFO")
+    logger = logging.getLogger("trappedbot")
+    logger.setLevel(log_level)
+    handler = logging.StreamHandler(sys.stdout)
+    handler.setFormatter(formatter)
+    # Clear out any existing log handlers
+    # This ensures we have just one stream handler configured, in case we reload the config later
+    for exhandler in logger.handlers:
+        if isinstance(exhandler, logging.StreamHandler):
+            logger.removeHandler(exhandler)
+    logger.addHandler(handler)
 
-        # Logging setup
-        formatter = logging.Formatter(
-            "%(asctime)s | %(name)s [%(levelname)s] %(message)s"
-        )
+    database_filepath = os.path.abspath(configuration["storage"]["database_filepath"])
+    store_filepath = os.path.abspath(configuration["storage"]["store_filepath"])
+    os.makedirs(store_filepath, exist_ok=True)
+    task_dict_filepath = os.path.abspath(configuration["storage"]["task_dict_filepath"])
+    os.makedirs(os.path.dirname(database_filepath), exist_ok=True)
+    if not os.path.exists(task_dict_filepath):
+        raise ConfigError(f"No tasks file at configured path {task_dict_filepath}")
 
-        log_level = self._get_cfg(["logging", "level"], default="INFO")
-        trappedbot.LOGGER.setLevel(log_level)
+    user_id = configuration["matrix"]["user_id"]
+    if not re.match("@.*:.*", user_id):
+        raise ConfigError("matrix.user_id must be in the form @name:domain")
 
-        file_logging_enabled = self._get_cfg(
-            ["logging", "file_logging", "enabled"], default=False
-        )
-        file_logging_filepath = self._get_cfg(
-            ["logging", "file_logging", "filepath"], default="bot.log"
-        )
-        if file_logging_enabled:
-            handler = logging.FileHandler(file_logging_filepath)
-            handler.setFormatter(formatter)
-            trappedbot.LOGGER.addHandler(handler)
+    # Retrieve the access credential. Prefer the access token if both are present.
+    user_password = configuration["matrix"].get("user_password", None)
+    user_access_token = configuration["matrix"].get("access_token", None)
+    if not user_password and not user_access_token:
+        raise ConfigError("Either user_password or access_token must be specified")
 
-        console_logging_enabled = self._get_cfg(
-            ["logging", "console_logging", "enabled"], default=True
-        )
-        if console_logging_enabled:
-            handler = logging.StreamHandler(sys.stdout)
-            handler.setFormatter(formatter)
-            trappedbot.LOGGER.addHandler(handler)
+    device_id = configuration["matrix"]["device_id"]
+    device_name = configuration["matrix"]["device_name"]
+    homeserver_url = configuration["matrix"]["homeserver_url"]
+    trust_own_devices = configuration["matrix"]["trust_own_devices"]
+    change_device_name = configuration["matrix"]["change_device_name"]
 
-        # Storage setup
-        self.database_filepath = os.path.abspath(
-            self._get_cfg(["storage", "database_filepath"], required=True)
-        )
-        self.store_filepath = os.path.abspath(
-            self._get_cfg(["storage", "store_filepath"], required=True)
-        )
-        self.task_dict_filepath = os.path.abspath(
-            self._get_cfg(["storage", "task_dict_filepath"], default=None)
-        )
+    command_prefix = configuration["bot"]["command_prefix"]
+    trusted_users = configuration["bot"].get("trusted_users", [])
 
-        if not os.path.exists(self.task_dict_filepath):
-            raise ConfigError(
-                f"No tasks file at configured path {self.task_dict_filepath}"
-            )
+    appconfig = AppConfig(
+        configuration=configuration,
+        config_filepath=filepath,
+        database_filepath=database_filepath,
+        store_filepath=store_filepath,
+        task_dict_filepath=task_dict_filepath,
+        user_id=user_id,
+        user_password=user_password,
+        user_access_token=user_access_token,
+        device_id=device_id,
+        device_name=device_name,
+        homeserver_url=homeserver_url,
+        trust_own_devices=trust_own_devices,
+        change_device_name=change_device_name,
+        command_prefix=command_prefix,
+        trusted_users=trusted_users,
+    )
 
-        # Create the store folder
-        os.makedirs(self.store_filepath, exist_ok=True)
-
-        # Create the database parent folder
-        os.makedirs(os.path.dirname(self.database_filepath), exist_ok=True)
-
-        # Matrix bot account setup
-        self.user_id = self._get_cfg(["matrix", "user_id"], required=True)
-        if not re.match("@.*:.*", self.user_id):
-            raise ConfigError("matrix.user_id must be in the form @name:domain")
-
-        self.user_password = self._get_cfg(
-            ["matrix", "user_password"], required=False, default=None
-        )
-        self.access_token = self._get_cfg(
-            ["matrix", "access_token"], required=False, default=None
-        )
-        self.device_id = self._get_cfg(["matrix", "device_id"], required=True)
-        self.device_name = self._get_cfg(
-            ["matrix", "device_name"], default="nio-template"
-        )
-        self.homeserver_url = self._get_cfg(["matrix", "homeserver_url"], required=True)
-
-        self.command_prefix = self._get_cfg(["command_prefix"], default="!c") + " "
-
-        if not self.user_password and not self.access_token:
-            raise ConfigError("Either user_password or access_token must be specified")
-
-        self.trust_own_devices = self._get_cfg(
-            ["matrix", "trust_own_devices"], default=False, required=False
-        )
-        self.change_device_name = self._get_cfg(
-            ["matrix", "change_device_name"], default=False, required=False
-        )
-
-        # Trusted user setup
-        self.trusted_users = self._get_cfg(["matrix", "trusted_users"], required=False)
-
-    def _get_cfg(
-        self,
-        path: List[str],
-        default: Any = None,
-        required: bool = True,
-    ) -> Any:
-        """Get a config option.
-
-        Get a config option from a path and option name,
-        specifying whether it is required.
-
-        Raises
-        ------
-            ConfigError: If required is specified and the object is not found
-                (and there is no default value provided),
-                this error will be raised.
-
-        """
-        config = self.config
-        for name in path:
-            config = config.get(name)
-            if config is None:
-                if required:
-                    raise ConfigError(f"Config option {'.'.join(path)} is required")
-                return default
-        return config
+    return (appconfig, logger)

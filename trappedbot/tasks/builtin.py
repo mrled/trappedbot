@@ -5,24 +5,16 @@ These are not restricted to external system commands, but can just return Python
 
 import platform
 import sys
-import textwrap
 import typing
 
 import trappedbot
-from trappedbot.taskdict import Task, TaskFunction, TaskMessageContext
 from trappedbot.mxutil import MessageFormat
+from trappedbot.taskdict import Task, TaskMessageContext
+from trappedbot.tasks.mxusers import get_mx_users_wrapper
+from trappedbot.tasks.taskutil import constant2taskfunc
 
 
-def constant2taskfunc(value: str) -> TaskFunction:
-    """Given a constant, return a TaskFunction"""
-
-    def _result_func(arguments: typing.List[str], context: TaskMessageContext) -> str:
-        return value
-
-    return _result_func
-
-
-def echo(arguments: typing.List[str], context: TaskMessageContext) -> str:
+def echo(arguments: typing.List[str], _context: TaskMessageContext) -> str:
     return " ".join(arguments)
 
 
@@ -30,7 +22,7 @@ def dbgecho(arguments: typing.List[str], context: TaskMessageContext) -> str:
     return f"{context.sender} in room {context.room} said {' '.join(arguments)}"
 
 
-def platinfo(arguments: typing.List[str], context: TaskMessageContext) -> str:
+def platinfo(_arguments: typing.List[str], _context: TaskMessageContext) -> str:
     info = {
         "Python version": " ".join(sys.version.split("\n")),
         "Operating system": platform.system(),
@@ -73,4 +65,10 @@ BUILTIN_TASKS = [
         allow_untrusted=True,
         format=MessageFormat.FORMATTED,
     ),
+    # Task(
+    #     "mxusers",
+    #     taskfunc=get_mx_users_wrapper,
+    #     help="List matrix users from a configured server",
+    #     format=MessageFormat.FORMATTED,
+    # ),
 ]

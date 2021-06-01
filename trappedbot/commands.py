@@ -18,7 +18,6 @@ from nio.rooms import MatrixRoom
 import trappedbot
 from trappedbot import mxutil
 from trappedbot.chat_functions import send_text_to_room
-from trappedbot.config import Config
 from trappedbot.taskdict import TaskDict, TaskMessageContext
 from trappedbot.storage import Storage
 
@@ -30,7 +29,6 @@ class Command(object):
         self,
         client: AsyncClient,
         store: Storage,
-        config: Config,
         taskdict: TaskDict,
         command: str,
         room: MatrixRoom,
@@ -42,7 +40,6 @@ class Command(object):
         ---------
             client: The client to communicate with Matrix
             store: Bot storage
-            config: Bot configuration parameters
             tasks: Tasks dictionary
             command: The command and arguments
             room: The room the command was sent in
@@ -50,7 +47,6 @@ class Command(object):
         """
         self.client = client
         self.store = store
-        self.config = config
         self.taskdict = taskdict
 
         # Split the command into arguments, and always user lower case for the command name
@@ -85,7 +81,11 @@ class Command(object):
             return
 
         sender = mxutil.Mxid.fromstr(self.event.sender)
-        if task.allow_untrusted:
+        if sender.mxid in trappedbot.APPCONFIG.trusted_users:
+            trappedbot.LOGGER.debug(
+                f"Processing command {self.rawcmd} from sender {sender.mxid} because sender is in the list of trusted users"
+            )
+        elif task.allow_untrusted:
             trappedbot.LOGGER.debug(
                 f"Processing command {self.rawcmd} from sender {sender.mxid} because the invoked task {task.name} allows untrusted invocation"
             )
@@ -104,7 +104,7 @@ class Command(object):
             await send_text_to_room(
                 self.client,
                 self.room.room_id,
-                "Not authorized: User {sender.mxid} is not authorized to run the task {task.name}",
+                f"Not authorized: User {sender.mxid} is not authorized to run the task {task.name}",
                 format=mxutil.MessageFormat.NATURAL,
                 split=None,
             )

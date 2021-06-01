@@ -1,4 +1,4 @@
-command_prefix: "!t"
+---
 
 matrix:
   user_id: "@bot:example.com"
@@ -12,15 +12,16 @@ matrix:
   trust_own_devices: true
   change_device_name: true
 
+bot:
+  command_prefix: "!t"
+  trusted_users:
+    - "@you:example.org"
+    - "@admin:example.net"
+
 storage:
   database_filepath: "/path/to/trappedbot/bot.db"
   store_filepath: "/path/to/trappedbot/store"
   task_dict_filepath: "/path/to/trappedbot/tasks.yml"
 
 logging:
-  level: DEBUG
-  file_logging:
-    enabled: false
-    filepath: /dev/null
-  console_logging:
-    enabled: true
+  level: INFO

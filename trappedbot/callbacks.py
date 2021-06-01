@@ -20,6 +20,7 @@ from nio.rooms import MatrixRoom
 from nio.events.room_events import RoomMessageText
 
 import trappedbot
+from trappedbot.builtin_tasks import BUILTIN_TASKS
 from trappedbot.commands import Command
 from trappedbot.taskdict import TaskDict
 
@@ -60,6 +61,8 @@ class Callbacks(object):
         self.store = store
         self.config = config
         self.taskdict = TaskDict(config.task_dict_filepath)
+        for task in BUILTIN_TASKS:
+            self.taskdict.tasks[task.name] = task
         self.command_prefix = config.command_prefix
 
     async def message(self, room, event):

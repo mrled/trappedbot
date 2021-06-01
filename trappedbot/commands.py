@@ -98,17 +98,43 @@ class Command(object):
             trappedbot.LOGGER.critical(
                 f"Refusing to process command {self.command} from sender {sender.mxid} because the invoked task {task.name} does not permit execution by this user"
             )
-            # TODO: Have the bot reply when this happens
+            await send_text_to_room(
+                self,
+                client,
+                self.room.room_id,
+                "Not authorized: User {sender.mxid} is not authorized to run the task {task.name}",
+                markdown_convert=False,
+                code=False,
+                split=None,
+            )
             return
 
-        await self._os_cmd(
-            cmd=task.systemcmd,
-            args=self.args,
-            markdown_convert=task.format == TaskOutputFormat.MARKDOWN,
-            code=task.format == TaskOutputFormat.CODE,
-            split=task.split,
+        try:
+            result = task.action(self.args)
+            markdown_convert = task.format == TaskOutputFormat.MARKDOWN
+            code = task.format == TaskOutputFormat.CODE
+            split = task.split
+            trappedbot.LOGGER.debug(
+                f"Task {task.name} completed successfully; replying with result:\n{result}"
+            )
+        except BaseException as exc:
+            result = f"Error:\n{exc}\n{traceback.format_exc()}"
+            markdown_convert = False
+            # Always format errors in a code block
+            code = True
+            split = None
+            trappedbot.LOGGER.debig(
+                f"Task {task.name} encountered an error; replying with error:\n{result}"
+            )
+
+        await send_text_to_room(
+            self.client,
+            self.room.room_id,
+            result,
+            markdown_convert=markdown_convert,
+            code=code,
+            split=split,
         )
-        return
 
     async def _show_help(self):
         """Show the help text."""
@@ -153,84 +179,4 @@ class Command(object):
                 f"Unknown command `{self.command}`. "
                 "Try the `help` command for more information."
             ),
-        )
-
-    async def _os_cmd(
-        self,
-        cmd: str,
-        args: list,
-        markdown_convert=True,
-        code=False,
-        split=None,
-    ):
-        """Pass generic command on to the operating system.
-
-        cmd (str): string of the command including any path,
-            make sure command is found
-            by operating system in its PATH for executables
-            e.g. "date" for OS date command.
-            cmd does not include any arguments.
-            Valid example of cmd: "date"
-            Invalid example for cmd: "echo 'Date'; date --utc"
-            Invalid example for cmd: "echo 'Date' && date --utc"
-            Invalid example for cmd: "TZ='America/Los_Angeles' date"
-            If you have commands that consist of more than 1 command,
-            put them into a shell or .bat script and call that script
-            with any necessary arguments.
-        args (list): list of arguments
-            Valid example: [ '--verbose', '--abc', '-d="hello world"']
-        markdown_convert (bool): value for how to format response
-        code (bool): value for how to format response
-        """
-        try:
-            # create a combined argv list, e.g. ['date', '--utc']
-            argv_list = [cmd] + args
-            trappedbot.LOGGER.debug(
-                f'OS command "{argv_list[0]}" with ' f'args: "{argv_list[1:]}"'
-            )
-
-            # Set environment variables for the subprocess here.
-            # Env variables like PATH, etc. are already set. In order to not lose
-            # any set env variables we must merge existing env variables with the
-            # new env variable(s). subprocess.Popen must be called with the
-            # complete combined list.
-            new_env = os.environ.copy()
-            new_env["ENO_SENDER"] = self.event.sender
-
-            run = subprocess.Popen(
-                argv_list,  # list of argv
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-                universal_newlines=True,
-                env=new_env,
-            )
-            output, std_err = run.communicate()
-            output = output.strip()
-            std_err = std_err.strip()
-            if run.returncode != 0:
-                trappedbot.LOGGER.debug(
-                    f"Bot command {cmd} exited with return "
-                    f"code {run.returncode} and "
-                    f'stderr as "{std_err}" and '
-                    f'stdout as "{output}"'
-                )
-                output = (
-                    f"*** Error: command {cmd} returned error "
-                    f"code {run.returncode}. ***\n{std_err}\n{output}"
-                )
-            response = output
-        except Exception:
-            response = (
-                "Bot encountered an error. Here is the stack trace: \n"
-                + traceback.format_exc()
-            )
-            code = True  # format stack traces as code
-        trappedbot.LOGGER.debug(f"Sending this reply back: {response}")
-        await send_text_to_room(
-            self.client,
-            self.room.room_id,
-            response,
-            markdown_convert=markdown_convert,
-            code=code,
-            split=split,
         )

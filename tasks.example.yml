@@ -1,5 +1,6 @@
 ---
 
+# Note that builtin commands will override any listed here with the same name
 tasks:
   uptime:
     systemcmd: uptime

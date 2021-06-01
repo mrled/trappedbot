@@ -7,7 +7,6 @@ import os
 import sys
 import traceback
 import typing
-from importlib.metadata import version
 
 import trappedbot
 from trappedbot import util
@@ -25,7 +24,7 @@ def ExistingResolvedPath(path):
 def parseargs(arguments: typing.List[str]) -> argparse.Namespace:
     """Parse command-line arguments"""
     parser = argparse.ArgumentParser(
-        description="Trapped in a Matrix server, send help!"
+        description=trappedbot.HELP_TRAPPED_MSG,
     )
     parser.add_argument(
         "--debug",
@@ -63,11 +62,7 @@ def main(arguments: typing.List[str] = sys.argv[1:]):
         trappedbot.LOGGER.setLevel(logging.DEBUG)
 
     if parsed.action == "version":
-        print(
-            "Trapped in a Matrix server, send help! Version {}".format(
-                version("trappedbot")
-            )
-        )
+        print(trappedbot.version_cute())
         sys.exit(0)
 
     elif parsed.action == "bot":

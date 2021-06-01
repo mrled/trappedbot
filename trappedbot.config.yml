@@ -1,4 +1,4 @@
-command_prefix: "wish"
+command_prefix: "!t"
 
 matrix:
   user_id: "@bot:example.com"

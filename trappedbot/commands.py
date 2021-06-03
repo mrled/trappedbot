@@ -16,9 +16,10 @@ from nio.events.room_events import RoomMessageText
 from nio.rooms import MatrixRoom
 
 import trappedbot
-from trappedbot import mxutil
+from trappedbot import HELP_TRAPPED_MSG, mxutil
 from trappedbot.chat_functions import send_text_to_room
-from trappedbot.taskdict import TaskDict, TaskMessageContext
+from trappedbot.tasks.task import TaskMessageContext
+from trappedbot.tasks.taskdefinition import TaskDefinition
 from trappedbot.storage import Storage
 
 
@@ -29,7 +30,7 @@ class Command(object):
         self,
         client: AsyncClient,
         store: Storage,
-        taskdict: TaskDict,
+        taskdict: TaskDefinition,
         command: str,
         room: MatrixRoom,
         event: RoomMessageText,
@@ -112,7 +113,7 @@ class Command(object):
 
         taskctx = TaskMessageContext(self.event.sender, self.room.room_id)
         try:
-            result = task.action(self.cmdsplit[1:], taskctx)
+            result = task.taskfunc(self.cmdsplit[1:], taskctx)
             format = task.format
             split = task.split
             trappedbot.LOGGER.debug(
@@ -138,20 +139,13 @@ class Command(object):
     async def _show_help(self):
         """Show the help text."""
         if len(self.cmdsplit) == 1:
-            response = (
-                "Hello, I am your bot! "
-                "Use `help all` or `help commands` to view "
-                "available commands."
-            )
+            response = f"{HELP_TRAPPED_MSG} Use 'help commands' to view things I can do from in here."
             await send_text_to_room(self.client, self.room.room_id, response)
             return
 
         topic = self.cmdsplit[1]
 
-        if topic == "rules":
-            response = "These are the rules: Act responsibly."
-
-        elif topic == "commands" or topic == "all":
+        if topic == "commands":
             response = "Available commands:\n"
             for tname, task in self.taskdict.tasks.items():
                 response += f"\n- {tname}: {task.help}"

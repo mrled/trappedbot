@@ -7,6 +7,7 @@ import logging
 import os
 import sys
 import traceback
+from trappedbot.tasks.builtin import BUILTIN_TASKS
 import typing
 
 import requests
@@ -75,6 +76,9 @@ def parseargs(arguments: typing.List[str]) -> argparse.Namespace:
         "configpath", type=ExistingResolvedPath, help="Path to the config file"
     )
 
+    # sub_builtins =
+    subparsers.add_parser("builtin-tasks", help="List built in tasks")
+
     sub_acctok = subparsers.add_parser(
         "access-token", help="Get an access token from a Matrix server"
     )
@@ -130,6 +134,11 @@ def main(arguments: typing.List[str] = sys.argv[1:]):
                 f"Encountered exception: {exc}\nTraceback:\n{traceback.format_exc()}"
             )
             sys.exit(1)
+
+    elif parsed.action == "builtin-tasks":
+        print("The following tasks are built-in to the bot:")
+        for k, v in BUILTIN_TASKS.items():
+            print(f"- {k}: {v.help}")
 
     elif parsed.action == "access-token":
         password = parsed.password or getpass.getpass()

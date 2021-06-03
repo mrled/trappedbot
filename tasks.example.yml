@@ -2,10 +2,27 @@
 
 # Note that builtin commands will override any listed here with the same name
 tasks:
+  echo:
+    builtin: yes
+    help: Echoes back input
+    allow_untrusted: yes
+  dbgecho:
+    builtin: yes
+    help: Echoes back input with some other debugging info
+    allow_untrusted: yes
+  version:
+    builtin: yes
+    help: Returns bot version
+    allow_untrusted: yes
+  platinfo:
+    builtin: yes
+    help: Shows platform info
+    allow_untrusted: yes
+    format: FORMATTED
   uptime:
     systemcmd: uptime
     help: Shows uptime for the server runnig the bot
-    format: code
+    format: CODE
     allow_untrusted: yes
   whoami:
     systemcmd: whoami
@@ -18,5 +35,21 @@ tasks:
   date:
     systemcmd: date
     help: Shows the date according to the server where the bot is running
-    format: code
+    format: CODE
     allow_untrusted: yes
+
+  # See the example task here:
+  # <https://github.com/mrled/trappedbot/tree/master/support/example_external_task.py>
+  # example_external_task_py:
+  #   modulepath: /path/to/example_external_task.py
+  #   help: An example external Python task
+  #   allow_untrusted: yes
+
+  # See the example task here:
+  # <https://github.com/mrled/trappedbot/tree/master/support/mxusers.py>
+  # mxusers:
+  #   modulepath: /path/to/mxusers.py
+  #   help: Liste matrix users from a configured server
+  #   format: FORMATTED
+  #   allow_users:
+  #     - @admin:example.net

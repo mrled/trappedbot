@@ -9,8 +9,7 @@ import typing
 
 import trappedbot
 from trappedbot.mxutil import MessageFormat
-from trappedbot.taskdict import Task, TaskMessageContext
-from trappedbot.tasks.mxusers import get_mx_users_wrapper
+from trappedbot.tasks.task import Task, TaskMessageContext
 from trappedbot.tasks.taskutil import constant2taskfunc
 
 
@@ -37,38 +36,36 @@ def platinfo(_arguments: typing.List[str], _context: TaskMessageContext) -> str:
     return result
 
 
-BUILTIN_TASKS = [
-    Task(
+# When the bot is started without a task definition file, the help/format/etc
+# of these tasks is used, but when the bot is started with a task definition
+# file that references these builtins, the help/format/etc from the task
+# definition file are used, and these here are ignored.
+BUILTIN_TASKS = {
+    "version": Task(
         "version",
         taskfunc=constant2taskfunc(trappedbot.version_cute()),
         help="Bot version",
         format=MessageFormat.CODE,
         allow_untrusted=True,
     ),
-    Task(
+    "echo": Task(
         "echo",
         taskfunc=echo,
         help="Echo back",
         allow_untrusted=True,
     ),
-    Task(
+    "dbgecho": Task(
         "dbgecho",
         taskfunc=dbgecho,
         help="Echo back, with debugging info",
         allow_untrusted=True,
         format=MessageFormat.MARKDOWN,
     ),
-    Task(
+    "platinfo": Task(
         "platinfo",
         taskfunc=platinfo,
         help="Show platform info for host running bot",
         allow_untrusted=True,
         format=MessageFormat.FORMATTED,
     ),
-    # Task(
-    #     "mxusers",
-    #     taskfunc=get_mx_users_wrapper,
-    #     help="List matrix users from a configured server",
-    #     format=MessageFormat.FORMATTED,
-    # ),
-]
+}

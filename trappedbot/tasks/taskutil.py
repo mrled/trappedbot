@@ -2,7 +2,7 @@
 
 import typing
 
-from trappedbot.taskdict import TaskFunction, TaskMessageContext
+from trappedbot.tasks.task import TaskFunction, TaskMessageContext
 
 
 def constant2taskfunc(value: str) -> TaskFunction:

@@ -105,3 +105,6 @@ def get_mx_users_wrapper(
 
     # Requires MARKDOWN
     # return "\n".join([f"- {u['name']}" for u in filtered_userlist])
+
+
+trappedbot_task = get_mx_users_wrapper

@@ -20,9 +20,9 @@ from nio.rooms import MatrixRoom
 from nio.events.room_events import RoomMessageText
 
 import trappedbot
-from trappedbot.tasks import BUILTIN_TASKS
 from trappedbot.commands import Command
-from trappedbot.taskdict import TaskDict
+from trappedbot.tasks.builtin import BUILTIN_TASKS
+from trappedbot.tasks.taskdefinition import TaskDefinition
 
 
 # TODO: Consider NOT logging message contents unless passing some kind of --really-log-messages flag or something
@@ -58,9 +58,13 @@ class Callbacks(object):
         """
         self.client = client
         self.store = store
-        self.taskdict = TaskDict(trappedbot.APPCONFIG.task_dict_filepath)
-        for task in BUILTIN_TASKS:
-            self.taskdict.tasks[task.name] = task
+        self.taskdict = TaskDefinition(trappedbot.APPCONFIG.task_dict_filepath)
+        if len(self.taskdict.tasks) == 0:
+            trappedbot.LOGGER.info(
+                f"No tasks defined in task definition file, using builtins"
+            )
+            for task in BUILTIN_TASKS:
+                self.taskdict.tasks[task.name] = task
         self.command_prefix = trappedbot.APPCONFIG.command_prefix
 
     async def message(self, room, event):

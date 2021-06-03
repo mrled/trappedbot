@@ -14,6 +14,14 @@ class TaskMessageContext(typing.NamedTuple):
     room: str
 
 
+class TaskResult(typing.NamedTuple):
+    """The result of a TaskFunction"""
+
+    output: str
+    format: MessageFormat
+    split: typing.Optional[str] = None
+
+
 # A function that we can use to run code for our task
 # TaskFunction callables take a list of arguments, and a set of message context
 # The list of arguments comes from the chat command;
@@ -22,13 +30,15 @@ class TaskMessageContext(typing.NamedTuple):
 # The message context contains the sender, room, and possibly other metadata,
 # and can be used to write tasks that take these values into account,
 # for instance replying to users by name.
-TaskFunction = typing.Callable[[typing.List[str], TaskMessageContext], str]
+TaskFunction = typing.Callable[[typing.List[str], TaskMessageContext], TaskResult]
 
 
 def command2taskfunc(cmd: str) -> TaskFunction:
     """Return a TaskFunction that runs an external program"""
 
-    def _run_systemcmd(arguments: typing.List[str], context: TaskMessageContext) -> str:
+    def _run_systemcmd(
+        arguments: typing.List[str], context: TaskMessageContext
+    ) -> TaskResult:
         """Run an external program"""
 
         fullcmd = [cmd] + arguments
@@ -54,9 +64,22 @@ def command2taskfunc(cmd: str) -> TaskFunction:
                 proc.returncode, fullcmd, stdout, stderr
             )
 
-        return stdout
+        return TaskResult(stdout, MessageFormat.CODE)
 
     return _run_systemcmd
+
+
+def constant2taskfunc(
+    value: str, format: MessageFormat = MessageFormat.NATURAL
+) -> TaskFunction:
+    """Given a constant, return a TaskFunction"""
+
+    def _result_func(
+        arguments: typing.List[str], context: TaskMessageContext
+    ) -> TaskResult:
+        return TaskResult(value, format)
+
+    return _result_func
 
 
 class Task(typing.NamedTuple):

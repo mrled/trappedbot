@@ -43,13 +43,11 @@ def yamlobj2task(
         trappedbot.LOGGER.critical(f"Unknown task type for task {name}")
         return None
     format_name = yamlobj.get("format")
-    format = MessageFormat[format_name] if format_name else None
     return Task(
         name,
         taskfunc,
         regex=yamlobj.get("regex"),
         help=yamlobj.get("help"),
-        format=format,
         split=yamlobj.get("split"),
         allow_untrusted=yamlobj.get("allow_untrusted"),
         allow_homeservers=yamlobj.get("allow_homeservers"),

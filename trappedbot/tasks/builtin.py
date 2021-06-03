@@ -9,19 +9,26 @@ import typing
 
 import trappedbot
 from trappedbot.mxutil import MessageFormat
-from trappedbot.tasks.task import Task, TaskMessageContext
-from trappedbot.tasks.taskutil import constant2taskfunc
+from trappedbot.tasks.task import (
+    Task,
+    TaskMessageContext,
+    TaskResult,
+    constant2taskfunc,
+)
 
 
-def echo(arguments: typing.List[str], _context: TaskMessageContext) -> str:
-    return " ".join(arguments)
+def echo(arguments: typing.List[str], _context: TaskMessageContext) -> TaskResult:
+    return TaskResult(" ".join(arguments), MessageFormat.NATURAL)
 
 
-def dbgecho(arguments: typing.List[str], context: TaskMessageContext) -> str:
-    return f"{context.sender} in room {context.room} said {' '.join(arguments)}"
+def dbgecho(arguments: typing.List[str], context: TaskMessageContext) -> TaskResult:
+    return TaskResult(
+        f"{context.sender} in room {context.room} said {' '.join(arguments)}",
+        MessageFormat.NATURAL,
+    )
 
 
-def platinfo(_arguments: typing.List[str], _context: TaskMessageContext) -> str:
+def platinfo(_arguments: typing.List[str], _context: TaskMessageContext) -> TaskResult:
     info = {
         "Python version": " ".join(sys.version.split("\n")),
         "Operating system": platform.system(),
@@ -33,7 +40,7 @@ def platinfo(_arguments: typing.List[str], _context: TaskMessageContext) -> str:
     for k, v in info.items():
         result += f"<tr><th>{k}</th><td>{v}</td></tr>"
     result += "</table>"
-    return result
+    return TaskResult(result, MessageFormat.FORMATTED)
 
 
 # When the bot is started without a task definition file, the help/format/etc
@@ -43,7 +50,9 @@ def platinfo(_arguments: typing.List[str], _context: TaskMessageContext) -> str:
 BUILTIN_TASKS = {
     "version": Task(
         "version",
-        taskfunc=constant2taskfunc(trappedbot.version_cute()),
+        taskfunc=constant2taskfunc(
+            trappedbot.version_cute(), format=MessageFormat.CODE
+        ),
         help="Bot version",
         format=MessageFormat.CODE,
         allow_untrusted=True,

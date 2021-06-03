@@ -1,11 +1,12 @@
 """Get Matrix users connected to a given homeserver"""
 
+from trappedbot.mxutil import MessageFormat
 import typing
 
 import requests
 
 import trappedbot
-from trappedbot.tasks.task import TaskMessageContext
+from trappedbot.tasks.task import TaskMessageContext, TaskResult
 
 
 def is_bridged_user(username: str):
@@ -69,7 +70,7 @@ def get_mx_users(homeserver: str, bearertoken: str) -> typing.Dict:
 
 def get_mx_users_wrapper(
     _arguments: typing.List[str], _context: TaskMessageContext
-) -> str:
+) -> TaskResult:
     """A TaskFunction-compatible wrapper script for get_mx_users
 
     Required extension configuration configuration:
@@ -95,16 +96,16 @@ def get_mx_users_wrapper(
     # We filter out bridged users with this dumb hack:
     filtered_userlist = [u for u in userlist if not is_bridged_user(u["name"])]
 
-    # Requires FORMATTED
     table = "<table>"
     table += "<tr><th>Display name</th><th>MXID</th><th>Type</th><th>Admin</th></tr>"
     for user in filtered_userlist:
         table += f"<tr><th>{user['displayname']}</th><td>{user['name']}</td><td>{user['user_type']}</td><td>{user['admin']}</td></tr>"
     table += "</table>"
-    return table
+    return TaskResult(table, MessageFormat.FORMATTED)
 
-    # Requires MARKDOWN
-    # return "\n".join([f"- {u['name']}" for u in filtered_userlist])
+    # return TaskResult(
+    #     "\n".join([f"- {u['name']}" for u in filtered_userlist]), MessageFormat.MARKDOWN
+    # )
 
 
 trappedbot_task = get_mx_users_wrapper

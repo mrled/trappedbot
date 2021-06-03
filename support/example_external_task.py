@@ -32,9 +32,15 @@ with an __init__.py file) instead of simple Python modules (a script ending in
 
 import typing
 
-from trappedbot.tasks.task import TaskMessageContext
+from trappedbot.mxutil import MessageFormat
+from trappedbot.tasks.task import TaskMessageContext, TaskResult
 
 
-def trappedbot_task(arguments: typing.List[str], context: TaskMessageContext) -> str:
+def trappedbot_task(
+    arguments: typing.List[str], context: TaskMessageContext
+) -> TaskResult:
     """A simple echo command"""
-    return f"User {context.sender} in room {context.room} says '{' '.join(arguments)}'"
+    return TaskResult(
+        f"User {context.sender} in room {context.room} says '{' '.join(arguments)}'",
+        MessageFormat.NATURAL,
+    )

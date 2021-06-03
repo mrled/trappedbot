@@ -114,24 +114,25 @@ class Command(object):
         taskctx = TaskMessageContext(self.event.sender, self.room.room_id)
         try:
             result = task.taskfunc(self.cmdsplit[1:], taskctx)
-            format = task.format
-            split = task.split
+            message = result.output
+            format = result.format
+            split = result.split
             trappedbot.LOGGER.debug(
-                f"Task {task.name} completed successfully; replying with result:\n{result}"
+                f"Task {task.name} completed successfully; replying with output:\n{message}"
             )
         except BaseException as exc:
-            result = f"Error:\n{exc}\n{traceback.format_exc()}"
+            message = f"Error:\n{exc}\n{traceback.format_exc()}"
             # Always format errors in a code block
             format = mxutil.MessageFormat.CODE
             split = None
             trappedbot.LOGGER.debug(
-                f"Task {task.name} encountered an error; replying with error:\n{result}"
+                f"Task {task.name} encountered an error; replying with error:\n{message}"
             )
 
         await send_text_to_room(
             self.client,
             self.room.room_id,
-            result,
+            message,
             format=format,
             split=split,
         )

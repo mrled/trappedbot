@@ -18,11 +18,9 @@ tasks:
     builtin: yes
     help: Shows platform info
     allow_untrusted: yes
-    format: FORMATTED
   uptime:
     systemcmd: uptime
     help: Shows uptime for the server runnig the bot
-    format: CODE
     allow_untrusted: yes
   whoami:
     systemcmd: whoami
@@ -35,7 +33,6 @@ tasks:
   date:
     systemcmd: date
     help: Shows the date according to the server where the bot is running
-    format: CODE
     allow_untrusted: yes
 
   # See the example task here:
@@ -50,6 +47,5 @@ tasks:
   # mxusers:
   #   modulepath: /path/to/mxusers.py
   #   help: Liste matrix users from a configured server
-  #   format: FORMATTED
   #   allow_users:
   #     - @admin:example.net

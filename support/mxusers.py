@@ -5,7 +5,7 @@ import typing
 import requests
 
 import trappedbot
-from trappedbot.taskdict import TaskMessageContext
+from trappedbot.tasks.task import TaskMessageContext
 
 
 def is_bridged_user(username: str):

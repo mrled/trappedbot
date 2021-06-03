@@ -38,11 +38,9 @@ def yamlobj2task(
         else:
             # TODO: bleh is this the best pattern
             taskfunc = taskfunc_opt
-    # TODO: have bot list builtin tasks for interactive exploration by admins
     else:
         trappedbot.LOGGER.critical(f"Unknown task type for task {name}")
         return None
-    format_name = yamlobj.get("format")
     return Task(
         name,
         taskfunc,

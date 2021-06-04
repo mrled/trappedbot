@@ -32,8 +32,11 @@ with an __init__.py file) instead of simple Python modules (a script ending in
 
 import typing
 
-from trappedbot.mxutil import MessageFormat
-from trappedbot.tasks.task import TaskMessageContext, TaskResult
+from trappedbot.extensions import (
+    MessageFormat,
+    TaskMessageContext,
+    TaskResult,
+)
 
 
 def trappedbot_task(

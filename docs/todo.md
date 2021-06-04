@@ -15,10 +15,6 @@
         * Long, familiar stuff like The Office, Friends, etc, is nice because you can put it on in the background and enjoy it without paying too much attention
         * For novel stuff, something very short is probably better, perhaps Made Out Of Meat
     * That makes me want to implement a game with Matrix bots
-    * Provide stable API for external extensions
-        * Make this API small and manageable and expose it through some interface like `trappedbot.extensions.*`
-        * E.g. Task and related stuff could be re-exported from there
-        * Users can use anything in the codebase but not promised to work between versions
     * Do not allow setting paths in task definition
         * Make the user do this in the env before starting the bot, or specify full paths to executables
 * Docs

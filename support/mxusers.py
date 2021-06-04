@@ -1,12 +1,16 @@
 """Get Matrix users connected to a given homeserver"""
 
-from trappedbot.mxutil import MessageFormat
 import typing
 
 import requests
 
-import trappedbot
-from trappedbot.tasks.task import TaskMessageContext, TaskResult
+from trappedbot.extensions import (
+    LOGGER,
+    MessageFormat,
+    TaskMessageContext,
+    TaskResult,
+    appconfig_extension,
+)
 
 
 def is_bridged_user(username: str):
@@ -54,7 +58,7 @@ def get_mx_users(homeserver: str, bearertoken: str) -> typing.Dict:
         "Authorization": f"Bearer {bearertoken}",
     }
     response = requests.get(uri, params=params, headers=headers)
-    trappedbot.LOGGER.debug(
+    LOGGER.debug(
         f"Got response from server: uri {response.url} code {response.status_code} text: {response.text}"
     )
     jresponse = response.json()
@@ -86,8 +90,8 @@ def get_mx_users_wrapper(
     matrix_nginx_proxy_proxy_matrix_client_api_forwarded_location_synapse_admin_api_enabled
     https://github.com/spantaleev/matrix-docker-ansible-deploy/blob/master/roles/matrix-nginx-proxy/defaults/main.yml
     """
-    homeserver = trappedbot.APPCONFIG.extension("get_mx_users", "homeserver")
-    bearer_token = trappedbot.APPCONFIG.extension("get_mx_users", "bearer_token")
+    homeserver = appconfig_extension("get_mx_users", "homeserver")
+    bearer_token = appconfig_extension("get_mx_users", "bearer_token")
     userlist = get_mx_users(homeserver, bearer_token)
 
     # WARNING: with bridging, these user counts are way too high,

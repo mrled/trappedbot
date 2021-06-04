@@ -8,52 +8,75 @@ This file implements utility functions for
 - sending of other files like audio, video, text, PDFs, .doc, etc.
 """
 
+import html
 import os
 import traceback
+import typing
 
 import aiofiles.os
 import magic
 from markdown import markdown
 from nio import SendRetryError, UploadResponse
 from PIL import Image
+from nio.client.async_client import AsyncClient
+from nio.events.room_events import RoomMessageText
+from nio.rooms import MatrixRoom
 
 import trappedbot
 from trappedbot.mxutil import MessageFormat
 
 
+def reply_fallback_html_from_message(
+    room_id: str, event_id: str, sender_mxid: str, sender_displayname: str, content: str
+) -> str:
+    """Generate reply fallback from a message"""
+    fallback = (
+        f"<mx-reply><blockquote>"
+        f"<a href='https://matrix.to/#/{room_id}/{event_id}'>In reply to</a> "
+        f"<a href='https://matrix.to/#/{sender_mxid}'>{sender_displayname}</a><br/>"
+        f"{content}"
+        f"</blockquote></mx-reply>"
+    )
+    return fallback
+
+
+def reply_fallback_text_from_message(
+    sender_displayname: str,
+    content: str,
+) -> str:
+    """Generate a reply fallback from a text message"""
+    fallback = ""
+    for idx, line in enumerate(content):
+        if idx == 0:
+            fallback += f"> <{sender_displayname}> {line}"
+        else:
+            fallback += f"> {line}"
+    return fallback
+
+
 async def send_text_to_room(
-    client,
-    room_id,
-    message,
-    notice=True,
-    format=MessageFormat.NATURAL,
-    split=None,
+    client: AsyncClient,
+    room_id: str,
+    message: str,
+    notice: bool = True,
+    format: typing.Optional[MessageFormat] = MessageFormat.NATURAL,
+    split: typing.Optional[str] = None,
+    replyto: typing.Optional[RoomMessageText] = None,
+    replyto_room: typing.Optional[MatrixRoom] = None,
 ):
     """Send text to a matrix room.
 
     Arguments:
     ---------
-    client (nio.AsyncClient): The client to communicate with Matrix
-
-    room_id (str): The ID of the room to send the message to
-
-    message (str): The message content
-
-    notice (bool): Whether the message should be sent with an
+    client: The client to communicate with Matrix
+    room_id: The ID of the room to send the message to
+    message: The message content
+    notice: Whether the message should be sent with an
         "m.notice" message type (will not ping users)
-
-    markdown_convert (bool): Whether to convert the message content
-        to markdown. Defaults to true.
-
-    code (bool): whether message should be sent as code block with
-        fixed-size font.
-        If set to True, markdown_convert will be ignored.
-        Defaults to False
-
-    split (str): if set, split the message into multiple messages wherever
+    format: The format for the message
+    split: if set, split the message into multiple messages wherever
         the string specified in split occurs
         Defaults to None
-
     """
     trappedbot.LOGGER.debug(f"send_text_to_room {room_id} {message}")
     messages = []
@@ -70,7 +93,7 @@ async def send_text_to_room(
         # Determine whether to ping room members or not
         msgtype = "m.notice" if notice else "m.text"
 
-        content = {
+        content: typing.Dict[str, typing.Any] = {
             "msgtype": msgtype,
             "body": message,
         }
@@ -87,6 +110,44 @@ async def send_text_to_room(
             content["body"] = "```\n" + message + "\n```"  # to format it as code
         else:
             pass
+
+        if (replyto and not replyto_room) or (not replyto and replyto_room):
+            trappedbot.LOGGER.error(
+                f"send_text_to_room was passed only one of replyto and replyto_room, NOT sending message as reply"
+            )
+        elif replyto and replyto_room:
+            trappedbot.LOGGER.debug(
+                f"send_text_to_room replying to message {replyto.event_id}"
+            )
+
+            # If there was no HTML-formatted body in the original message,
+            # build one from the unformatted body.
+            if (
+                not content.get("formatted_body")
+                or content.get("format") != "org.matrix.custom.html"
+            ):
+                content["format"] = "org.matrix.custom.html"
+                content["formatted_body"] = html.escape(content["body"])
+
+            content["body"] = (
+                reply_fallback_text_from_message(replyto.sender, replyto.body)
+                + content["body"]
+            )
+            content["formatted_body"] = (
+                reply_fallback_html_from_message(
+                    replyto_room.canonical_alias or replyto_room.room_id,
+                    replyto.event_id,
+                    replyto.sender,
+                    replyto_room.user_name(replyto.sender) or replyto.sender,
+                    replyto.body,
+                )
+                + content["formatted_body"]
+            )
+            content["m.relates_to"] = {
+                "m.in_reply_to": {
+                    "event_id": replyto.event_id,
+                }
+            }
 
         try:
             await client.room_send(

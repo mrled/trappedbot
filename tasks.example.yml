@@ -1,6 +1,5 @@
 ---
 
-# Note that builtin commands will override any listed here with the same name
 tasks:
   echo:
     builtin: yes
@@ -18,6 +17,7 @@ tasks:
     builtin: yes
     help: Shows platform info
     allow_untrusted: yes
+
   uptime:
     systemcmd: uptime
     help: Shows uptime for the server runnig the bot
@@ -35,17 +35,21 @@ tasks:
     help: Shows the date according to the server where the bot is running
     allow_untrusted: yes
 
-  # See the example task here:
+  # Example task defined externally
   # <https://github.com/mrled/trappedbot/tree/master/support/example_external_task.py>
-  # example_external_task_py:
-  #   modulepath: /path/to/example_external_task.py
-  #   help: An example external Python task
-  #   allow_untrusted: yes
+  example_external_task_py:
+    modulepath: /home/mrled/Syncthing/SharedKilotah/trappedbot/support/example_external_task.py
+    help: An example external Python task
+    allow_untrusted: yes
 
-  # See the example task here:
-  # <https://github.com/mrled/trappedbot/tree/master/support/mxusers.py>
+  # Example task for querying a Matrix server's user accounts list
   # mxusers:
   #   modulepath: /path/to/mxusers.py
   #   help: Liste matrix users from a configured server
   #   allow_users:
   #     - @admin:example.net
+
+responses:
+  - regex: "^jesus +([a-zA-Z-\.]* +)?christ[\.\!\?]*$"
+    ignorecase: true
+    response: "Yes, my son?"

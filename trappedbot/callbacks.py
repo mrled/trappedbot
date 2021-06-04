@@ -5,7 +5,9 @@
 - performing an emoji verification (bot must run in forground as keyboard input is required)
 """
 
+import re
 import traceback
+from trappedbot.chat_functions import send_text_to_room
 
 from nio import (
     JoinError,
@@ -63,39 +65,35 @@ class Callbacks(object):
             trappedbot.LOGGER.info(
                 f"No tasks defined in task definition file, using builtins"
             )
-            for task in BUILTIN_TASKS:
-                self.taskdict.tasks[task.name] = task
+            self.taskdict.tasks = BUILTIN_TASKS
         self.command_prefix = trappedbot.APPCONFIG.command_prefix
 
-    async def message(self, room, event):
+    async def message(self, room: MatrixRoom, event: RoomMessageText):
         """Handle an incoming message event.
 
-        Arguments:
-        ---------
-            room (nio.rooms.MatrixRoom): The room the event came from
-            event (nio.events.room_events.RoomMessageText): The event
-                defining the message
-
+        room:   The room the event came from
+        event:  The event defining the message
         """
-
-        if event.body.startswith(self.command_prefix):
-            has_command_prefix = True
-            msg = event.body[len(self.command_prefix) :]
-        else:
-            has_command_prefix = False
-            msg = event.body
 
         if event.sender == self.client.user:
             msglog("Ignoring message from myself", room, event)
             return
-        elif not has_command_prefix and not in_dms(room):
-            msglog("Ignoring message without prefix in multi-user room", room, event)
+        elif event.body.startswith(self.command_prefix):
+            msg = event.body[len(self.command_prefix) :]
+            command = Command(self.client, self.store, self.taskdict, msg, room, event)
+            await command.process()
             return
         else:
-            msglog("Handling message", room, event)
-
-        command = Command(self.client, self.store, self.taskdict, msg, room, event)
-        await command.process()
+            for response in self.taskdict.responses:
+                if response.regex.search(event.body):
+                    await send_text_to_room(
+                        self.client,
+                        room.room_id,
+                        response.message,
+                        replyto=event,
+                        replyto_room=room,
+                    )
+            return
 
     async def invite(self, room, event):
         """Handle an incoming invite event.

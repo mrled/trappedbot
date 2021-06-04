@@ -2,6 +2,7 @@
 """
 
 import os
+import re
 import typing
 
 import yaml
@@ -10,6 +11,7 @@ import trappedbot
 from trappedbot.mxutil import MessageFormat
 from trappedbot.tasks.builtin import BUILTIN_TASKS
 from trappedbot.tasks.dynload import trappedbot_dynload_for_taskfunc
+from trappedbot.tasks.responses import Response
 from trappedbot.tasks.task import Task, command2taskfunc
 
 
@@ -53,7 +55,29 @@ def yamlobj2task(
     )
 
 
-# TODO: Make TaskDict a true dict subclass
+def yamlobj2response(idx: int, yamlobj: typing.Dict) -> typing.Optional[Response]:
+    """Make a new Response object from a YAML object"""
+    flags = re.IGNORECASE if yamlobj.get("ignorecase", False) else None
+    try:
+        regex_str = yamlobj["regex"]
+        try:
+            if flags is not None:
+                regex = re.compile(regex_str, flags=flags)
+            else:
+                regex = re.compile(regex_str)
+        except BaseException as exc:
+            trappedbot.LOGGER.critical(
+                f"Failed to compile regex {regex_str} for response definition found at index {idx} with exception {exc}, ignoring..."
+            )
+            return None
+        return Response(regex, yamlobj["response"])
+    except BaseException:
+        trappedbot.LOGGER.critical(
+            f"Invalid response definition found at index {idx}, ignoring..."
+        )
+        return None
+
+
 class TaskDefinition:
     """The task dictionary.
 
@@ -63,6 +87,7 @@ class TaskDefinition:
     def __init__(self, tasks_dict_filepath):
         """Initialize task dictionary."""
         self.tasks: typing.Dict[str, Task] = {}
+        self.responses: typing.List[Response] = []
         self.load(tasks_dict_filepath)
 
     def load(self, tasks_dict_filepath):
@@ -83,6 +108,11 @@ class TaskDefinition:
                 for tname, tdefn in loaded_tasks["tasks"].items():
                     if (task := yamlobj2task(tname, tdefn)) :
                         self.tasks[tname] = task
+
+            if "responses" in loaded_tasks:
+                for idx, rdefn in enumerate(loaded_tasks["responses"]):
+                    if (response := yamlobj2response(idx, rdefn)) :
+                        self.responses.append(response)
 
             if "paths" in loaded_tasks:
                 os.environ["PATH"] = os.pathsep.join(

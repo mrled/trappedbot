@@ -2,7 +2,10 @@
 
 * Features
     * Allow responding with emoji responses
-    * Hot-reload when the bot files or configuration change on disk, maybe using pyinotify
+    * Hot-reload when the bot files or configuration change on disk
+        * [watchdog](https://pypi.org/project/watchdog/): polling only
+        * [watchgod](https://pypi.org/project/watchgod/): polling only, claims to improve on watchdog
+        * [fswatch](https://github.com/emcrisostomo/fswatch): supports kernel monitors/notifications like fsevents and inotify, but there are significant per-platform limitations from the underlying APIs.
     * Log some events to a specified channel. Thinking especially for automatic hot reloads.
     * Add an RSS reader that polls for changes to feeds and posts them to a channel
         * This is a new type of thing - it's not a bot command, but some background behavior it can notify you on

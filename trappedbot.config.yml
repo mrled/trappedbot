@@ -1,27 +1,149 @@
 ---
 
 matrix:
+
+  # The full matrix ID of the bot
   user_id: "@bot:example.com"
+
+  # The bot's password
   user_password: "asdf1234qwer0987/.,m"
-  # Provide this and remove the password
+
+  # Instead of a password, you can provide the bot's access token, which is a bit more secure.
+  # Run 'trappedbot access-token matrix.example.com @bot:example.com DEVICEID' to get one.
+  # (DEVICEID is arbitrary and should just be the same as below)
   # access_token: "PutYourLongAccessTokenHere"
 
+  # The matrix homeserver you want to use
+  # Note that this should be the matrix server itself, like 'matrix.example.com', not just 'example.com'
   homeserver_url: https://matrix.example.com
+
+  # The device ID is arbitrary
+  # The device name is a human-friendly name for it
   device_id: TESTDEVICE
-  device_name: eno
-  trust_own_devices: true
-  change_device_name: true
+  device_name: trappedbot
+
+  # Automatically trust other devices on the same account?
+  trust_own_devices: false
+
+  # If the human-friendly device name is different on the server to what is specified above, change it?
+  change_device_name: false
 
 bot:
+
+  # Commands must be prefixed with this string:
   command_prefix: "!t"
+
+  # Users in this list can run all commands, even if those commands do not allow them explicitly
   trusted_users:
     - "@you:example.org"
     - "@admin:example.net"
 
 storage:
+  # Where to store the bot database?
   database_filepath: "/path/to/trappedbot/bot.db"
+  # Where to find the bot local storage?
   store_filepath: "/path/to/trappedbot/store"
+  # The location of the tasks dict
   task_dict_filepath: "/path/to/trappedbot/tasks.yml"
 
 logging:
+  # Possible values are (in order of least to most verbose):
+  # CRITICAL, ERROR, WARNING, INFO, DEBUG
   level: INFO
+
+# The extension section is used for custom Python extensions
+# If you're writing a custom extension, you can read configuration values from here if appropriate.
+extension:
+
+# You give the bot text _commands_, which cause it to execute underlying _tasks_.
+# You must prefix commands with the command prefix.
+# E.g.
+#   @you:example.com            !t echo hi trappedbot
+#   @trappedbot:example.com     hi trappedbot
+# In the above example, the command was 'echo', and it performed the builtin echo task.
+# Commands are the keys, below
+# There are several different kinds of tasks, which are discussed below.
+commands:
+
+  # Builtin commands ship with trappedbot
+  # You can list the builtin tasks with 'trappedbot builtin-tasks'
+  echo:                         # The name of this _command_ is 'echo'
+                                # Type the command prefix, then 'echo', then text you want to echo
+    builtin: echo               # The 'echo' command will execute a builtin task also named 'echo'
+    help: Echoes back input     # Some help that the bot can give you interactively
+    allow_untrusted: no         # [Optional, default false] Allow any user to run this command?
+    allow_homeservers:          # [Optional, default empty] Allow any user from the list of homeservers to run this command
+      - example.org
+      - example.net
+    allow_users:                # [Optional, default empty] Allow any user in this list to run this command
+      - "@admin:example.com"
+  dbgecho:
+    builtin: dbgecho
+    help: Echoes back input with some other debugging info
+    allow_untrusted: yes
+  version:
+    builtin: version
+    help: Returns bot version
+    allow_untrusted: yes
+  platinfo:
+    builtin: platinfo
+    help: Shows platform info
+    allow_untrusted: yes
+
+  # You can also create tasks from commands on the system your bot is running on.
+  # Any text sent after these commands will be sent as arguments to the command
+  uptime:                       # The name of the _command_ is uptime
+                                # Type the command prefix, then 'uptime'
+    systemcmd: uptime           # The 'uptime' command will execute the 'uptime' binary in your $PATH
+                                # You can also provide an absolute path to the systemcmd
+    help: Shows uptime for the server runnig the bot
+    allow_untrusted: yes
+  whoami:
+    systemcmd: whoami
+    help: Shows the Unix user that the bot is running under
+    allow_untrusted: yes
+  hostname:
+    systemcmd: hostname
+    help: Shows the hostname for the server where the bot is running
+    allow_untrusted: yes
+  date:
+    systemcmd: date
+    help: Shows the date according to the server where the bot is running
+    allow_untrusted: yes
+
+  # Finally, you can create tasks from external Python
+  # External tasks can come from modules (single .py files) or packages (directories with an __init__.py)
+  # Some examples to get you started ship with trappedbot in the support/ subdirectory, like this one:
+  # <https://github.com/mrled/trappedbot/tree/master/support/example_external_task.py>
+  # This is just a simple task that echoes the input (like the builtin 'echo')
+  external_echo:
+    modulepath: /home/mrled/Syncthing/SharedKilotah/trappedbot/support/example_external_task.py
+    help: An example external Python task
+    allow_untrusted: yes
+
+  # Example task for querying a Matrix server's user accounts list
+  # mxusers:
+  #   modulepath: /path/to/mxusers.py
+  #   help: Liste matrix users from a configured server
+  #   allow_users:
+  #     - @admin:example.net
+
+# You can also define responses to any text
+# These responses are sent to any message that matches the regex and which does NOT start with the command prefix.
+# They're intended for a little fun in a chat room
+responses:
+
+  # Tell a dad joke
+  # Whenever a the exact string 'im hungry' is posted to the channel,
+  # let em know who's their daddy.
+  - regex: "^im hungry$"
+    ignorecase: true
+    response: "Hi hungry, I'm dad!"
+
+  # Our lordt & savior, trappedbot
+  # Respond to "jesus christ", "jesus h christ", etc, with "Yes, my son?"
+  # Note that you have to escape your backslashes because of YAML :(
+  # TODO: is there a way around escaping YAML backslashes?
+  - regex: "^jesus +([a-zA-Z-\\.]* +)?christ[\\.\\!\\?]*$"
+    ignorecase: true
+    response: "Yes, my son?"

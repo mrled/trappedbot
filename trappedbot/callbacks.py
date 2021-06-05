@@ -5,9 +5,7 @@
 - performing an emoji verification (bot must run in forground as keyboard input is required)
 """
 
-import re
 import traceback
-from trappedbot.chat_functions import send_text_to_room
 
 from nio import (
     JoinError,
@@ -18,19 +16,25 @@ from nio import (
     ToDeviceError,
     LocalProtocolError,
 )
-from nio.rooms import MatrixRoom
+from nio.client.async_client import AsyncClient
 from nio.events.room_events import RoomMessageText
+from nio.rooms import MatrixRoom
 
 import trappedbot
-from trappedbot.commands import Command
+from trappedbot import appconfig
+from trappedbot.applogger import LOGGER
+from trappedbot.chat_functions import send_text_to_room
+from trappedbot.commands.command import Command, process_command
+from trappedbot.commands.command_list import CommandList
+from trappedbot.responses.response_list import ResponseList
+from trappedbot.storage import Storage
 from trappedbot.tasks.builtin import BUILTIN_TASKS
-from trappedbot.tasks.taskdefinition import TaskDefinition
 
 
 # TODO: Consider NOT logging message contents unless passing some kind of --really-log-messages flag or something
 def msglog(logline: str, room: MatrixRoom, event: RoomMessageText):
     """Log a line with room name/user/message metadata"""
-    trappedbot.LOGGER.debug(
+    LOGGER.debug(
         f"{logline} % {room.display_name} | {room.user_name(event.sender)}: {event.body}"
     )
 
@@ -50,7 +54,7 @@ def in_dms(room: MatrixRoom) -> bool:
 class Callbacks(object):
     """Collection of all callbacks."""
 
-    def __init__(self, client, store):
+    def __init__(self, client: AsyncClient, store: Storage):
         """Initialize.
 
         Arguments:
@@ -60,13 +64,6 @@ class Callbacks(object):
         """
         self.client = client
         self.store = store
-        self.taskdict = TaskDefinition(trappedbot.APPCONFIG.task_dict_filepath)
-        if len(self.taskdict.tasks) == 0:
-            trappedbot.LOGGER.info(
-                f"No tasks defined in task definition file, using builtins"
-            )
-            self.taskdict.tasks = BUILTIN_TASKS
-        self.command_prefix = trappedbot.APPCONFIG.command_prefix
 
     async def message(self, room: MatrixRoom, event: RoomMessageText):
         """Handle an incoming message event.
@@ -74,17 +71,17 @@ class Callbacks(object):
         room:   The room the event came from
         event:  The event defining the message
         """
+        config = appconfig.get()
 
         if event.sender == self.client.user:
             msglog("Ignoring message from myself", room, event)
             return
-        elif event.body.startswith(self.command_prefix):
-            msg = event.body[len(self.command_prefix) :]
-            command = Command(self.client, self.store, self.taskdict, msg, room, event)
-            await command.process()
+        elif event.body.startswith(config.command_prefix):
+            msg = event.body[len(config.command_prefix) :]
+            await process_command(self.client, msg, room, event)
             return
         else:
-            for response in self.taskdict.responses:
+            for response in config.responses.responses:
                 if response.regex.search(event.body):
                     await send_text_to_room(
                         self.client,
@@ -100,13 +97,13 @@ class Callbacks(object):
 
         If an invite is received, then join the room specified in the invite.
         """
-        trappedbot.LOGGER.debug(f"Got invite to {room.room_id} from {event.sender}.")
+        LOGGER.debug(f"Got invite to {room.room_id} from {event.sender}.")
 
         # Attempt to join 3 times before giving up
         for attempt in range(3):
             result = await self.client.join(room.room_id)
             if type(result) == JoinError:
-                trappedbot.LOGGER.error(
+                LOGGER.error(
                     f"Error joining room {room.room_id} (attempt %d): %s",
                     attempt,
                     result.message,
@@ -114,10 +111,10 @@ class Callbacks(object):
             else:
                 break
         else:
-            trappedbot.LOGGER.error("Unable to join room: %s", room.room_id)
+            LOGGER.error("Unable to join room: %s", room.room_id)
 
         # Successfully joined room
-        trappedbot.LOGGER.info(f"Joined {room.room_id}")
+        LOGGER.info(f"Joined {room.room_id}")
 
     async def to_device_cb(self, event):  # noqa
         """Handle events sent to device.
@@ -128,7 +125,7 @@ class Callbacks(object):
         """
         try:
             client = self.client
-            trappedbot.LOGGER.debug(
+            LOGGER.debug(
                 f"Device Event of type {type(event)} received in " "to_device_cb()."
             )
 
@@ -168,13 +165,13 @@ class Callbacks(object):
                         f"{event.short_authentication_string}. Aborting."
                     )
                     print(estr)
-                    trappedbot.LOGGER.info(estr)
+                    LOGGER.info(estr)
                     return
                 resp = await client.accept_key_verification(event.transaction_id)
                 if isinstance(resp, ToDeviceError):
                     estr = f"accept_key_verification() failed with {resp}"
                     print(estr)
-                    trappedbot.LOGGER.info(estr)
+                    LOGGER.info(estr)
 
                 sas = client.key_verifications[event.transaction_id]
 
@@ -183,7 +180,7 @@ class Callbacks(object):
                 if isinstance(resp, ToDeviceError):
                     estr = f"to_device() failed with {resp}"
                     print(estr)
-                    trappedbot.LOGGER.info(estr)
+                    LOGGER.info(estr)
 
             elif isinstance(event, KeyVerificationCancel):  # anytime
                 """at any time: receive KeyVerificationCancel
@@ -208,7 +205,7 @@ class Callbacks(object):
                     f'for reason "{event.reason}".'
                 )
                 print(estr)
-                trappedbot.LOGGER.info(estr)
+                LOGGER.info(estr)
 
             elif isinstance(event, KeyVerificationKey):  # second step
                 """Second step is to receive KeyVerificationKey
@@ -238,37 +235,37 @@ class Callbacks(object):
                         "Match! The verification for this " "device will be accepted."
                     )
                     print(estr)
-                    trappedbot.LOGGER.info(estr)
+                    LOGGER.info(estr)
                     resp = await client.confirm_short_auth_string(event.transaction_id)
                     if isinstance(resp, ToDeviceError):
                         estr = "confirm_short_auth_string() " f"failed with {resp}"
                         print(estr)
-                        trappedbot.LOGGER.info(estr)
+                        LOGGER.info(estr)
                 elif yn.lower() == "n":  # no, don't match, reject
                     estr = (
                         "No match! Device will NOT be verified "
                         "by rejecting verification."
                     )
                     print(estr)
-                    trappedbot.LOGGER.info(estr)
+                    LOGGER.info(estr)
                     resp = await client.cancel_key_verification(
                         event.transaction_id, reject=True
                     )
                     if isinstance(resp, ToDeviceError):
                         estr = f"cancel_key_verification failed with {resp}"
                         print(estr)
-                        trappedbot.LOGGER.info(estr)
+                        LOGGER.info(estr)
                 else:  # C or anything for cancel
                     estr = "Cancelled by user! Verification will be " "cancelled."
                     print(estr)
-                    trappedbot.LOGGER.info(estr)
+                    LOGGER.info(estr)
                     resp = await client.cancel_key_verification(
                         event.transaction_id, reject=False
                     )
                     if isinstance(resp, ToDeviceError):
                         estr = f"cancel_key_verification failed with {resp}"
                         print(estr)
-                        trappedbot.LOGGER.info(estr)
+                        LOGGER.info(estr)
 
             elif isinstance(event, KeyVerificationMac):  # third step
                 """Third step is to receive KeyVerificationMac
@@ -297,13 +294,13 @@ class Callbacks(object):
                         "Try again?"
                     )
                     print(estr)
-                    trappedbot.LOGGER.info(estr)
+                    LOGGER.info(estr)
                 else:
                     resp = await client.to_device(todevice_msg)
                     if isinstance(resp, ToDeviceError):
                         estr = f"to_device failed with {resp}"
                         print(estr)
-                        trappedbot.LOGGER.info(estr)
+                        LOGGER.info(estr)
                     estr = (
                         f"sas.we_started_it = {sas.we_started_it}\n"
                         f"sas.sas_accepted = {sas.sas_accepted}\n"
@@ -313,7 +310,7 @@ class Callbacks(object):
                         f"sas.verified_devices = {sas.verified_devices}\n"
                     )
                     print(estr)
-                    trappedbot.LOGGER.info(estr)
+                    LOGGER.info(estr)
                     estr = (
                         "Emoji verification was successful!\n"
                         "Initiate another Emoji verification from "
@@ -323,15 +320,15 @@ class Callbacks(object):
                         "run it in the background."
                     )
                     print(estr)
-                    trappedbot.LOGGER.info(estr)
+                    LOGGER.info(estr)
             else:
                 estr = (
                     f"Received unexpected event type {type(event)}. "
                     f"Event is {event}. Event will be ignored."
                 )
                 print(estr)
-                trappedbot.LOGGER.info(estr)
+                LOGGER.info(estr)
         except BaseException:
             estr = traceback.format_exc()
             print(estr)
-            trappedbot.LOGGER.info(estr)
+            LOGGER.info(estr)

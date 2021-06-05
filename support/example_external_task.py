@@ -14,16 +14,8 @@ function called 'trappedbot_task' which takes two arguments:
     sender:     The mxid of the sender, like '@user:example.com'
     room:       The room ID, like !ickuLvUxvGXCJsZcpV:example.com
 
-The function should return a string that can be
-
-See the example in tasks.example.yml for how to reference this.
-
-TODO:   Have all Python tasks return their format type too.
-        This means the implementation can change and configured tasks do not
-        need to be updated.
-You can return Markdown or Matrix custom HTML (which is a simplified subset of
-HTML but includes nice formatting options like tables). If you do, the format
-must be specified in your tasks yml file.
+The function then must return a TaskResult containing the output to the channel
+and formatting information.
 
 One final note: an external Python task can be a Python package (a directory
 with an __init__.py file) instead of simple Python modules (a script ending in

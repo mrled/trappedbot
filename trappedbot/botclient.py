@@ -15,7 +15,8 @@ from nio import (
 )
 from aiohttp import ServerDisconnectedError, ClientConnectionError
 
-import trappedbot
+from trappedbot import appconfig
+from trappedbot.applogger import LOGGER
 from trappedbot.callbacks import Callbacks
 from trappedbot.storage import Storage
 
@@ -23,7 +24,7 @@ from trappedbot.storage import Storage
 async def botloop():
     """The bot client itself"""
 
-    config = trappedbot.APPCONFIG
+    config = appconfig.get()
     store = Storage(config.database_filepath)
 
     client_config = AsyncClientConfig(
@@ -50,9 +51,7 @@ async def botloop():
         try:
             try:
                 if config.user_access_token:
-                    trappedbot.LOGGER.debug(
-                        "Using access token from config file to log in."
-                    )
+                    LOGGER.debug("Using access token from config file to log in.")
                     client.restore_login(
                         user_id=config.user_id,
                         device_id=config.device_id,
@@ -60,9 +59,7 @@ async def botloop():
                     )
 
                 else:
-                    trappedbot.LOGGER.debug(
-                        "Using password from config file to log in."
-                    )
+                    LOGGER.debug("Using password from config file to log in.")
                     login_response = await client.login(
                         password=config.user_password,
                         device_name=config.device_name,
@@ -70,11 +67,9 @@ async def botloop():
 
                     # Check if login failed
                     if type(login_response) == LoginError:
-                        trappedbot.LOGGER.error(
-                            "Failed to login: " f"{login_response.message}"
-                        )
+                        LOGGER.error("Failed to login: " f"{login_response.message}")
                         return False
-                    trappedbot.LOGGER.info(
+                    LOGGER.info(
                         (
                             f"access_token of device {config.device_name}"
                             f' is: "{login_response.access_token}"'
@@ -85,7 +80,7 @@ async def botloop():
                 # There's an edge case here where the user hasn't installed
                 # the correct C dependencies. In that case, a
                 # LocalProtocolError is raised on login.
-                trappedbot.LOGGER.critical(
+                LOGGER.critical(
                     "Failed to login. "
                     "Have you installed the correct dependencies? "
                     "https://github.com/poljar/matrix-nio#installation "
@@ -93,7 +88,7 @@ async def botloop():
                 )
                 return False
 
-            trappedbot.LOGGER.debug(
+            LOGGER.debug(
                 f"Logged in successfully as user {config.user_id} "
                 f"with device {config.device_id}."
             )
@@ -107,9 +102,9 @@ async def botloop():
                 content = {"display_name": config.device_name}
                 resp = await client.update_device(config.device_id, content)
                 if isinstance(resp, UpdateDeviceError):
-                    trappedbot.LOGGER.critical(f"update_device failed with {resp}")
+                    LOGGER.critical(f"update_device failed with {resp}")
                 else:
-                    trappedbot.LOGGER.debug(f"update_device successful with {resp}")
+                    LOGGER.debug(f"update_device successful with {resp}")
 
             if config.trust_own_devices:
                 await client.sync(timeout=30000, full_state=True)
@@ -118,10 +113,10 @@ async def botloop():
                 for device_id, olm_device in client.device_store[
                     config.user_id
                 ].items():
-                    trappedbot.LOGGER.info(
+                    LOGGER.info(
                         f"My other devices are: device_id={device_id}, olm_device={olm_device}."
                     )
-                    trappedbot.LOGGER.info(
+                    LOGGER.info(
                         f"Setting up trust for my own device {device_id} and session key {olm_device.keys['ed25519']}."
                     )
                     client.verify_device(olm_device)
@@ -129,9 +124,7 @@ async def botloop():
             await client.sync_forever(timeout=30000, full_state=True)
 
         except (ClientConnectionError, ServerDisconnectedError):
-            trappedbot.LOGGER.warning(
-                "Unable to connect to homeserver, retrying in 15s..."
-            )
+            LOGGER.warning("Unable to connect to homeserver, retrying in 15s...")
 
             # Sleep so we don't bombard the server with login requests
             sleep(15)

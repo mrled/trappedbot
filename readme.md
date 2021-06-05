@@ -33,3 +33,21 @@ Build distributable packages:
 ```sh
 python -m build
 ```
+
+## Running in production
+
+See the [systemd service definition file example](support/trappedbot.service) for how to run this under systemd.
+
+## Configuration
+
+See the [example configuration file](trappedbot.config.yml) for an example
+
+This file configures credentials and so forth, and also the commands and responses that your bot is capable of.
+
+## Extensions
+
+You can write custom extensions for `trappedbot` in Python.
+
+The package exports the `trappedbot.extensions` namespace, which contains interfaces that are guaranteed not to change between major versions. You are welcome to use anything else internal, but implementations may change in minor releases.
+
+Extensions must export a `trappedbot_task` function of the type `trappedbot.tasks.task.TaskFunction`.

@@ -1,0 +1,30 @@
+[Unit]
+Description=trappedbot
+
+[Service]
+
+# An existing user and group that will run trappedbot
+User=trappedbot
+Group=trappedbot
+
+# Ensures that output is sent directly to systemd
+# Without this, output may be buffered and appear only in batches
+# You cn read these logs with e.g. 'journalctl -fu trappedbot'
+Environment=PYTHONUNBUFFERED=1
+
+# If you have tasks configured that run system commands,
+# you may need to adjust the PATH environment variable.
+# Note that the systemd default is pretty restrictive and does not read from e.g. /etc/profile.
+# Using absolute paths in the tasks definition file will solve this as well.
+Environment=PATH=/path/to/trappedbot_scripts:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+
+# Make sure you set these to the proper paths.
+# You can easily install trappedbot into a virtual environment and reference it directly.
+ExecStart=/path/to/trappedbot /path/to/trappedbot-config.yaml
+
+ExecStop=/bin/kill -9 $MAINPID
+Restart=on-failure
+RestartSec=30
+
+[Install]
+WantedBy=multi-user.target

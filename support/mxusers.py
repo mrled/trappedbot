@@ -1,4 +1,12 @@
-"""Get Matrix users connected to a given homeserver"""
+"""Get Matrix users connected to a given homeserver
+
+This is written as a proof of concept and a starter for third party extensions,
+but take care. It can cause load on the Matrix homeserver, and you may not want
+to expose your homeserver's admin API to the Internet.
+
+In its current form, it's definitely not suitable for large or even medium
+homeservers.
+"""
 
 import typing
 
@@ -9,7 +17,7 @@ from trappedbot.extensions import (
     MessageFormat,
     TaskMessageContext,
     TaskResult,
-    appconfig_extension,
+    appconfig,
 )
 
 
@@ -90,8 +98,9 @@ def get_mx_users_wrapper(
     matrix_nginx_proxy_proxy_matrix_client_api_forwarded_location_synapse_admin_api_enabled
     https://github.com/spantaleev/matrix-docker-ansible-deploy/blob/master/roles/matrix-nginx-proxy/defaults/main.yml
     """
-    homeserver = appconfig_extension("get_mx_users", "homeserver")
-    bearer_token = appconfig_extension("get_mx_users", "bearer_token")
+    config = appconfig.get()
+    homeserver = config.extension("get_mx_users", "homeserver")
+    bearer_token = config.extension("get_mx_users", "bearer_token")
     userlist = get_mx_users(homeserver, bearer_token)
 
     # WARNING: with bridging, these user counts are way too high,

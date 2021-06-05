@@ -7,15 +7,17 @@ import logging
 import os
 import sys
 import traceback
-from trappedbot.tasks.builtin import BUILTIN_TASKS
 import typing
 
 import requests
 
-import trappedbot
-from trappedbot import util
+from trappedbot import appconfig, util
+from trappedbot.applogger import LOGGER
 from trappedbot.botclient import botloop
-from trappedbot.config import parse_config
+from trappedbot.configuration import parse_config
+from trappedbot.constants import HELP_TRAPPED_MSG
+from trappedbot.tasks.builtin import BUILTIN_TASKS
+from trappedbot.version import version_cute
 
 
 def ExistingResolvedPath(path):
@@ -53,7 +55,7 @@ def access_token(
 def parseargs(arguments: typing.List[str]) -> argparse.Namespace:
     """Parse command-line arguments"""
     parser = argparse.ArgumentParser(
-        description=trappedbot.HELP_TRAPPED_MSG,
+        description=HELP_TRAPPED_MSG,
     )
     parser.add_argument(
         "--debug",
@@ -110,27 +112,29 @@ def main(arguments: typing.List[str] = sys.argv[1:]):
 
     parsed = parseargs(arguments)
 
-    if parsed.verbose:
-        trappedbot.LOGGER.setLevel(logging.DEBUG)
+    # force_log_debug is an not beautiful and a bit repetitive, but it lets me
+    # ensure that the command line flags can override settings in the config
+    # file if used, and the logger gets set up properly if it wasn't.
+    force_log_debug = False
+    if parsed.verbose or parsed.debug:
+        LOGGER.setLevel(logging.DEBUG)
+        force_log_debug = True
     if parsed.debug:
         sys.excepthook = util.idb_excepthook
-        trappedbot.LOGGER.setLevel(logging.DEBUG)
 
     if parsed.action == "version":
-        print(trappedbot.version_cute())
+        print(version_cute())
         sys.exit(0)
 
     elif parsed.action == "bot":
-        appconfig, applogger = parse_config(parsed.configpath)
-        trappedbot.APPCONFIG = appconfig
-        trappedbot.LOGGER = applogger
+        appconfig.set(parse_config(parsed.configpath, force_log_debug))
         try:
             asyncio.get_event_loop().run_until_complete(botloop())
         except KeyboardInterrupt:
-            trappedbot.LOGGER.debug("Received keyboard interrupt, exiting...")
+            LOGGER.debug("Received keyboard interrupt, exiting...")
             sys.exit(0)
         except Exception as exc:
-            trappedbot.LOGGER.error(
+            LOGGER.error(
                 f"Encountered exception: {exc}\nTraceback:\n{traceback.format_exc()}"
             )
             sys.exit(1)
@@ -138,7 +142,7 @@ def main(arguments: typing.List[str] = sys.argv[1:]):
     elif parsed.action == "builtin-tasks":
         print("The following tasks are built-in to the bot:")
         for k, v in BUILTIN_TASKS.items():
-            print(f"- {k}: {v.help}")
+            print(f"- {k}")
 
     elif parsed.action == "access-token":
         password = parsed.password or getpass.getpass()

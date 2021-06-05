@@ -6,7 +6,9 @@ import sys
 import types
 import typing
 
-import trappedbot
+from importlib.abc import Loader
+
+from trappedbot.applogger import LOGGER
 
 
 class DynloadSpecError(BaseException):
@@ -40,7 +42,7 @@ def dynamically_load_module(name: str, path: str) -> types.ModuleType:
     module_path = path if not os.path.isdir(path) else os.path.join(path, "__init__.py")
 
     spec = importlib.util.spec_from_file_location(name, module_path)
-    if spec is None:
+    if not isinstance(spec.loader, Loader):
         raise DynloadSpecError(name, path)
 
     dynmod = importlib.util.module_from_spec(spec)
@@ -63,20 +65,21 @@ def trappedbot_dynload_for_taskfunc(
     try:
         dynmod = dynamically_load_module(dynmod_name, path)
     except DynloadSpecError:
-        trappedbot.LOGGER.error(
+        LOGGER.error(
             f"Could not dynamically load a module called {dynmod_name} from {path} because it could not find a Python module or package at that location."
         )
         return None
     except DynloadDuplicateModuleError:
-        trappedbot.LOGGER.error(
+        LOGGER.error(
             f"Could not dynamically load a module called {dynmod_name} from {path} because a module with that name already exists."
         )
         return None
 
+    # Ignore type checking on the dynamic module, but log an error if it doesn't have a trappedbot_task
     try:
-        taskfunc = dynmod.trappedbot_task
+        taskfunc = dynmod.trappedbot_task  # type: ignore
     except AttributeError:
-        trappedbot.LOGGER.error(
+        LOGGER.error(
             f"Cannot use dynamically loaded module called {dynmod_name} from {path} because it does not export a 'trappedbot_task' function"
         )
         return None

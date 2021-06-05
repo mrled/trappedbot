@@ -22,7 +22,7 @@ from nio.client.async_client import AsyncClient
 from nio.events.room_events import RoomMessageText
 from nio.rooms import MatrixRoom
 
-import trappedbot
+from trappedbot.applogger import LOGGER
 from trappedbot.mxutil import MessageFormat
 
 
@@ -78,7 +78,7 @@ async def send_text_to_room(
         the string specified in split occurs
         Defaults to None
     """
-    trappedbot.LOGGER.debug(f"send_text_to_room {room_id} {message}")
+    LOGGER.debug(f"send_text_to_room {room_id} {message}")
     messages = []
     if split:
         for paragraph in message.split(split):
@@ -112,13 +112,11 @@ async def send_text_to_room(
             pass
 
         if (replyto and not replyto_room) or (not replyto and replyto_room):
-            trappedbot.LOGGER.error(
+            LOGGER.error(
                 f"send_text_to_room was passed only one of replyto and replyto_room, NOT sending message as reply"
             )
         elif replyto and replyto_room:
-            trappedbot.LOGGER.debug(
-                f"send_text_to_room replying to message {replyto.event_id}"
-            )
+            LOGGER.debug(f"send_text_to_room replying to message {replyto.event_id}")
 
             # If there was no HTML-formatted body in the original message,
             # build one from the unformatted body.
@@ -157,7 +155,7 @@ async def send_text_to_room(
                 ignore_unverified_devices=True,
             )
         except SendRetryError:
-            trappedbot.LOGGER.exception(f"Unable to send message response to {room_id}")
+            LOGGER.exception(f"Unable to send message response to {room_id}")
 
 
 async def send_image_to_room(client, room_id, image):
@@ -170,7 +168,7 @@ async def send_image_to_room(client, room_id, image):
     image (str): file name/path of image
 
     """
-    trappedbot.LOGGER.debug(f"send_image_to_room {room_id} {image}")
+    LOGGER.debug(f"send_image_to_room {room_id} {image}")
     await send_image_to_rooms(client, [room_id], image)
 
 
@@ -205,13 +203,13 @@ async def send_image_to_rooms(client, rooms, image):
 
     """
     if not rooms:
-        trappedbot.LOGGER.info(
+        LOGGER.info(
             "No rooms are given. This should not happen. "
             "This file is being droppend and NOT sent."
         )
         return
     if not os.path.isfile(image):
-        trappedbot.LOGGER.debug(
+        LOGGER.debug(
             f"File {image} is not a file. Doesn't exist or "
             "is a directory."
             "This file is being droppend and NOT sent."
@@ -220,9 +218,7 @@ async def send_image_to_rooms(client, rooms, image):
 
     mime_type = magic.from_file(image, mime=True)  # e.g. "image/jpeg"
     if not mime_type.startswith("image/"):
-        trappedbot.LOGGER.debug(
-            "Drop message because file does not have an image mime type."
-        )
+        LOGGER.debug("Drop message because file does not have an image mime type.")
         return
 
     im = Image.open(image)
@@ -238,9 +234,9 @@ async def send_image_to_rooms(client, rooms, image):
             filesize=file_stat.st_size,
         )
     if isinstance(resp, UploadResponse):
-        trappedbot.LOGGER.debug("Image was uploaded successfully to server. ")
+        LOGGER.debug("Image was uploaded successfully to server. ")
     else:
-        trappedbot.LOGGER.debug(f"Failed to upload image. Failure response: {resp}")
+        LOGGER.debug(f"Failed to upload image. Failure response: {resp}")
 
     content = {
         "body": os.path.basename(image),  # descriptive title
@@ -261,14 +257,12 @@ async def send_image_to_rooms(client, rooms, image):
             await client.room_send(
                 room_id, message_type="m.room.message", content=content
             )
-            trappedbot.LOGGER.debug(
-                f'This image was sent: "{image}" to room "{room_id}".'
-            )
+            LOGGER.debug(f'This image was sent: "{image}" to room "{room_id}".')
     except Exception:
-        trappedbot.LOGGER.debug(
+        LOGGER.debug(
             f"Image send of file {image} failed. " "Sorry. Here is the traceback."
         )
-        trappedbot.LOGGER.debug(traceback.format_exc())
+        LOGGER.debug(traceback.format_exc())
 
 
 async def send_file_to_room(client, room_id, file):
@@ -281,7 +275,7 @@ async def send_file_to_room(client, room_id, file):
     file (str): file name/path of file
 
     """
-    trappedbot.LOGGER.debug(f"send_file_to_room {room_id} {file}")
+    LOGGER.debug(f"send_file_to_room {room_id} {file}")
     await send_file_to_rooms(client, [room_id], file)
 
 
@@ -332,13 +326,13 @@ async def send_file_to_rooms(client, rooms, file):
 
     """
     if not rooms:
-        trappedbot.LOGGER.info(
+        LOGGER.info(
             "No rooms are given. This should not happen. "
             "This file is being droppend and NOT sent."
         )
         return
     if not os.path.isfile(file):
-        trappedbot.LOGGER.debug(
+        LOGGER.debug(
             f"File {file} is not a file. Doesn't exist or "
             "is a directory."
             "This file is being droppend and NOT sent."
@@ -348,7 +342,7 @@ async def send_file_to_rooms(client, rooms, file):
     # # restrict to "txt", "pdf", "mp3", "ogg", "wav", ...
     # if not re.match("^.pdf$|^.txt$|^.doc$|^.xls$|^.mobi$|^.mp3$",
     #                os.path.splitext(file)[1].lower()):
-    #    trappedbot.LOGGER.debug(f"File {file} is not a permitted file type. Should be "
+    #    LOGGER.debug(f"File {file} is not a permitted file type. Should be "
     #                 ".pdf, .txt, .doc, .xls, .mobi or .mp3 ... "
     #                 f"[{os.path.splitext(file)[1].lower()}]"
     #                 "This file is being droppend and NOT sent.")
@@ -359,7 +353,7 @@ async def send_file_to_rooms(client, rooms, file):
     # if ((not mime_type.startswith("application/")) and
     #        (not mime_type.startswith("plain/")) and
     #        (not mime_type.startswith("audio/"))):
-    #    trappedbot.LOGGER.debug(f"File {file} does not have an accepted mime type. "
+    #    LOGGER.debug(f"File {file} does not have an accepted mime type. "
     #                 "Should be something like application/pdf. "
     #                 f"Found mime type {mime_type}. "
     #                 "This file is being droppend and NOT sent.")
@@ -378,16 +372,14 @@ async def send_file_to_rooms(client, rooms, file):
             filesize=file_stat.st_size,
         )
     if isinstance(resp, UploadResponse):
-        trappedbot.LOGGER.debug(
-            f"File was uploaded successfully to server. Response is: {resp}"
-        )
+        LOGGER.debug(f"File was uploaded successfully to server. Response is: {resp}")
     else:
-        trappedbot.LOGGER.info(
+        LOGGER.info(
             "Bot failed to upload. "
             "Please retry. This could be temporary issue on your server. "
             "Sorry."
         )
-        trappedbot.LOGGER.info(
+        LOGGER.info(
             f'file="{file}"; mime_type="{mime_type}"; '
             f'filessize="{file_stat.st_size}"'
             f"Failed to upload: {resp}"
@@ -416,11 +408,7 @@ async def send_file_to_rooms(client, rooms, file):
             await client.room_send(
                 room_id, message_type="m.room.message", content=content
             )
-            trappedbot.LOGGER.debug(
-                f'This file was sent: "{file}" to room "{room_id}".'
-            )
+            LOGGER.debug(f'This file was sent: "{file}" to room "{room_id}".')
     except Exception:
-        trappedbot.LOGGER.debug(
-            f"File send of file {file} failed. Sorry. Here is the traceback."
-        )
-        trappedbot.LOGGER.debug(traceback.format_exc())
+        LOGGER.debug(f"File send of file {file} failed. Sorry. Here is the traceback.")
+        LOGGER.debug(traceback.format_exc())

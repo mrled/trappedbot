@@ -10,13 +10,17 @@ import json
 import logging
 import os
 import re
-import sys
+from trappedbot.commands.builtin import BUILTIN_COMMANDS
 import typing
 
 import yaml
 
+from trappedbot.applogger import LOGGER
+from trappedbot.commands.command_list import CommandList
+from trappedbot.responses.response_list import ResponseList
 
-class AppConfig(typing.NamedTuple):
+
+class Configuration(typing.NamedTuple):
     """Application configuration"""
 
     configuration: typing.Dict = {}
@@ -34,6 +38,8 @@ class AppConfig(typing.NamedTuple):
     change_device_name: bool = False
     command_prefix: str = ""
     trusted_users: typing.List[str] = []
+    commands: CommandList = CommandList({})
+    responses: ResponseList = ResponseList([])
 
     def extension(self, section: str, setting: str):
         """Retrieve an extension from the config
@@ -65,7 +71,10 @@ class ConfigError(RuntimeError):
         super(ConfigError, self).__init__("%s" % (msg,))
 
 
-def parse_config(filepath: str) -> typing.Tuple[AppConfig, logging.Logger]:
+def parse_config(
+    filepath: str,
+    force_log_debug: bool = False,
+) -> Configuration:
     """Parse a config file
 
     Return a tuple of an AppConfig object and a Logger
@@ -78,18 +87,10 @@ def parse_config(filepath: str) -> typing.Tuple[AppConfig, logging.Logger]:
         configuration = yaml.safe_load(f.read())
 
     # Logging setup
-    formatter = logging.Formatter("%(asctime)s | %(name)s [%(levelname)s] %(message)s")
-    log_level = configuration["logging"].get("level", "INFO")
-    logger = logging.getLogger("trappedbot")
-    logger.setLevel(log_level)
-    handler = logging.StreamHandler(sys.stdout)
-    handler.setFormatter(formatter)
-    # Clear out any existing log handlers
-    # This ensures we have just one stream handler configured, in case we reload the config later
-    for exhandler in logger.handlers:
-        if isinstance(exhandler, logging.StreamHandler):
-            logger.removeHandler(exhandler)
-    logger.addHandler(handler)
+    if force_log_debug:
+        LOGGER.setLevel(logging.DEBUG)
+    elif (config_log_lvl := configuration["logging"].get("level", None)) :
+        LOGGER.setLevel(config_log_lvl)
 
     database_filepath = os.path.abspath(configuration["storage"]["database_filepath"])
     store_filepath = os.path.abspath(configuration["storage"]["store_filepath"])
@@ -118,7 +119,16 @@ def parse_config(filepath: str) -> typing.Tuple[AppConfig, logging.Logger]:
     command_prefix = configuration["bot"]["command_prefix"]
     trusted_users = configuration["bot"].get("trusted_users", [])
 
-    appconfig = AppConfig(
+    commands = CommandList.from_yaml_obj(configuration.get("commands", {}))
+    for cmdname, cmd in BUILTIN_COMMANDS.items():
+        if cmdname in commands.commands:
+            LOGGER.warning(
+                f"A user-defined command '{cmdname}' conflicts with a built-in command of the same name. Overriding the user-defined command with the builtin."
+            )
+        commands.commands[cmdname] = cmd
+    responses = ResponseList.from_yaml_obj(configuration.get("responses", []))
+
+    appconfig = Configuration(
         configuration=configuration,
         config_filepath=filepath,
         database_filepath=database_filepath,
@@ -134,6 +144,8 @@ def parse_config(filepath: str) -> typing.Tuple[AppConfig, logging.Logger]:
         change_device_name=change_device_name,
         command_prefix=command_prefix,
         trusted_users=trusted_users,
+        commands=commands,
+        responses=responses,
     )
 
-    return (appconfig, logger)
+    return appconfig

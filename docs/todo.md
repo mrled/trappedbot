@@ -17,6 +17,11 @@
     * That makes me want to implement a game with Matrix bots
     * Do not allow setting paths in task definition
         * Make the user do this in the env before starting the bot, or specify full paths to executables
+    * Don't ask users to care about change_device_name.
+    * Have 'help commands' be different from 'help responses'
+    * Allow text responses only in specific rooms
+    * Builtin tasks should be able to have separate names, e.g. 'builtin: echo' not 'echo: builtin: yes'
+    * I have config.commands.commands['cmdname'] (and similar for responses); make this look nicer
 * Docs
     * Some of the old scripts were just docs placeholders for the user to write a real implementation, e.g. `backup.sh`; write docs instead?
     * Publish somewhere like readthedocs or github pages?

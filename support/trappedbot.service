@@ -19,8 +19,9 @@ Environment=PYTHONUNBUFFERED=1
 Environment=PATH=/path/to/trappedbot_scripts:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 
 # Make sure you set these to the proper paths.
-# You can easily install trappedbot into a virtual environment and reference it directly.
-ExecStart=/path/to/trappedbot /path/to/trappedbot-config.yaml
+ExecStart=/path/to/trappedbot /path/to/trappedbot-config.yml
+# You can easily install trappedbot into a virtual environment and reference it directly like this:
+# ExecStart=/path/to/venv/bin/trappedbot /path/to/trappedbot-config.yml
 
 ExecStop=/bin/kill -9 $MAINPID
 Restart=on-failure

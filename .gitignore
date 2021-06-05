@@ -9,4 +9,5 @@ trappedbot.*.config.yml
 tasks.yml
 bot.db
 store
+html/
 

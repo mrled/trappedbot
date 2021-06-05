@@ -3,6 +3,7 @@
 These are not restricted to external system commands, but can just return Python code
 """
 
+import dataclasses
 import platform
 import sys
 import typing
@@ -51,29 +52,56 @@ def builtin_task_platinfo(
     return TaskResult(result, MessageFormat.FORMATTED)
 
 
+@dataclasses.dataclass
+class HelpTopic:
+    name: str
+    help: str
+    detail: str
+
+
 def builtin_task_help(
     arguments: typing.List[str], context: TaskMessageContext
 ) -> TaskResult:
     config = appconfig.get()
-    format = MessageFormat.NATURAL
+    format = MessageFormat.MARKDOWN
+
+    topic_commands_lines = []
+    for cname, cmd in config.commands.commands.items():
+        topic_commands_lines.append(f"- `{config.command_prefix} {cname}`: {cmd.help}")
+
+    topic_responses_lines = []
+    for reply in config.responses.responses:
+        topic_responses_lines.append(f"- `{reply.regex.pattern}` => `{reply.message}`")
+
+    help_topics = HelpTopic("topics", "This help", "PLACEHOLDER")
+
+    topics = [
+        help_topics,
+        HelpTopic(
+            "commands", "Show a list of commands", "\n".join(topic_commands_lines)
+        ),
+        HelpTopic(
+            "responses", "Show a list of responses", "\n".join(topic_responses_lines)
+        ),
+    ]
+    topicdict = {t.name: t for t in topics}
+
+    help_topics_lines = []
+    for t in topics:
+        help_topics_lines.append(f"- **{t.name}**: {t.help}")
+    help_topics.detail = "\n".join(help_topics_lines)
+
     if len(arguments) == 0:
-        output = (
-            f"{HELP_TRAPPED_MSG} Use 'help commands' to view things I can do from here"
-        )
-    elif len(arguments) == 1:
-        topic = arguments[0]
-        if topic == "commands":
-            outlines = []
-            for cname, cmd in config.commands.commands.items():
-                outlines.append(f"- `{cname}`: {cmd.help}")
-            output = "\n".join(outlines)
-            format = MessageFormat.MARKDOWN
-        elif (command := config.commands.commands.get(topic)) :
-            output = f"{topic}: {command.help}"
-        else:
-            output = f"Unknown help topic '{topic}'"
+        outlines = [f"{HELP_TRAPPED_MSG}", ""]
+        for t in topics:
+            outlines += [f"- `{config.command_prefix} help {t.name}`: {t.help}"]
+        output = "\n".join(outlines)
     else:
-        output = f"Not sure how to help you with '{arguments}'"
+        topic = arguments[0]
+        if topic in topicdict:
+            output = topicdict[topic].detail
+        else:
+            output = f"Unknown help command '{arguments}'"
     return TaskResult(output, format)
 
 

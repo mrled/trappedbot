@@ -1,0 +1,1067 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.9.2" />
+<title>trappedbot.callbacks API documentation</title>
+<meta name="description" content="Implement callbacks for: …" />
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
+<link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/github.min.css" crossorigin>
+<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/highlight.min.js" integrity="sha256-Uv3H6lx7dJmRfRvH8TH6kJD1TSK1aFcwgx+mdg3epi8=" crossorigin></script>
+<script>window.addEventListener('DOMContentLoaded', () => hljs.initHighlighting())</script>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>trappedbot.callbacks</code></h1>
+</header>
+<section id="section-intro">
+<p>Implement callbacks for:</p>
+<ul>
+<li>receiving a text message</li>
+<li>receiving an invite</li>
+<li>performing an emoji verification (bot must run in forground as keyboard input is required)</li>
+</ul>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">&#34;&#34;&#34;Implement callbacks for:
+
+- receiving a text message
+- receiving an invite
+- performing an emoji verification (bot must run in forground as keyboard input is required)
+&#34;&#34;&#34;
+
+import traceback
+
+from nio import (
+    JoinError,
+    KeyVerificationStart,
+    KeyVerificationCancel,
+    KeyVerificationKey,
+    KeyVerificationMac,
+    ToDeviceError,
+    LocalProtocolError,
+)
+from nio.client.async_client import AsyncClient
+from nio.events.room_events import RoomMessageText
+from nio.rooms import MatrixRoom
+
+import trappedbot
+from trappedbot import appconfig
+from trappedbot.applogger import LOGGER
+from trappedbot.chat_functions import send_text_to_room
+from trappedbot.commands.command import Command, process_command
+from trappedbot.commands.command_list import CommandList
+from trappedbot.responses.response_list import ResponseList
+from trappedbot.storage import Storage
+from trappedbot.tasks.builtin import BUILTIN_TASKS
+
+
+# TODO: Consider NOT logging message contents unless passing some kind of --really-log-messages flag or something
+def msglog(logline: str, room: MatrixRoom, event: RoomMessageText):
+    &#34;&#34;&#34;Log a line with room name/user/message metadata&#34;&#34;&#34;
+    LOGGER.debug(
+        f&#34;{logline} % {room.display_name} | {room.user_name(event.sender)}: {event.body}&#34;
+    )
+
+
+def in_dms(room: MatrixRoom) -&gt; bool:
+    &#34;&#34;&#34;Are we in DMs, or in a larger room?
+
+    TODO: is there a better way to determine this?
+    &#34;&#34;&#34;
+    # room.is_group is often a DM, but not always.
+    # room.is_group does not allow room aliases
+    # room.member_count &gt; 2 ... we assume a public room
+    # room.member_count &lt;= 2 ... we assume a DM
+    return room.member_count &lt;= 2
+
+
+class Callbacks(object):
+    &#34;&#34;&#34;Collection of all callbacks.&#34;&#34;&#34;
+
+    def __init__(self, client: AsyncClient, store: Storage):
+        &#34;&#34;&#34;Initialize.
+
+        Arguments:
+        ---------
+            client (nio.AsyncClient): nio client used to interact with matrix
+            store (Storage): Bot storage
+        &#34;&#34;&#34;
+        self.client = client
+        self.store = store
+
+    async def message(self, room: MatrixRoom, event: RoomMessageText):
+        &#34;&#34;&#34;Handle an incoming message event.
+
+        room:   The room the event came from
+        event:  The event defining the message
+        &#34;&#34;&#34;
+        config = appconfig.get()
+
+        if event.sender == self.client.user:
+            msglog(&#34;Ignoring message from myself&#34;, room, event)
+            return
+        elif event.body.startswith(config.command_prefix):
+            msg = event.body[len(config.command_prefix) :]
+            await process_command(self.client, msg, room, event)
+            return
+        else:
+            for response in config.responses.responses:
+                if response.regex.search(event.body):
+                    await send_text_to_room(
+                        self.client,
+                        room.room_id,
+                        response.message,
+                        replyto=event,
+                        replyto_room=room,
+                    )
+            return
+
+    async def invite(self, room, event):
+        &#34;&#34;&#34;Handle an incoming invite event.
+
+        If an invite is received, then join the room specified in the invite.
+        &#34;&#34;&#34;
+        LOGGER.debug(f&#34;Got invite to {room.room_id} from {event.sender}.&#34;)
+
+        # Attempt to join 3 times before giving up
+        for attempt in range(3):
+            result = await self.client.join(room.room_id)
+            if type(result) == JoinError:
+                LOGGER.error(
+                    f&#34;Error joining room {room.room_id} (attempt %d): %s&#34;,
+                    attempt,
+                    result.message,
+                )
+            else:
+                break
+        else:
+            LOGGER.error(&#34;Unable to join room: %s&#34;, room.room_id)
+
+        # Successfully joined room
+        LOGGER.info(f&#34;Joined {room.room_id}&#34;)
+
+    async def to_device_cb(self, event):  # noqa
+        &#34;&#34;&#34;Handle events sent to device.
+
+        Specifically this will perform Emoji verification.
+        It will accept an incoming Emoji verification requests
+        and follow the verification protocol.
+        &#34;&#34;&#34;
+        try:
+            client = self.client
+            LOGGER.debug(
+                f&#34;Device Event of type {type(event)} received in &#34; &#34;to_device_cb().&#34;
+            )
+
+            if isinstance(event, KeyVerificationStart):  # first step
+                &#34;&#34;&#34;first step: receive KeyVerificationStart
+                KeyVerificationStart(
+                    source={&#39;content&#39;:
+                            {&#39;method&#39;: &#39;m.sas.v1&#39;,
+                             &#39;from_device&#39;: &#39;DEVICEIDXY&#39;,
+                             &#39;key_agreement_protocols&#39;:
+                                [&#39;curve25519-hkdf-sha256&#39;, &#39;curve25519&#39;],
+                             &#39;hashes&#39;: [&#39;sha256&#39;],
+                             &#39;message_authentication_codes&#39;:
+                                [&#39;hkdf-hmac-sha256&#39;, &#39;hmac-sha256&#39;],
+                             &#39;short_authentication_string&#39;:
+                                [&#39;decimal&#39;, &#39;emoji&#39;],
+                             &#39;transaction_id&#39;: &#39;SomeTxId&#39;
+                             },
+                            &#39;type&#39;: &#39;m.key.verification.start&#39;,
+                            &#39;sender&#39;: &#39;@user2:example.org&#39;
+                            },
+                    sender=&#39;@user2:example.org&#39;,
+                    transaction_id=&#39;SomeTxId&#39;,
+                    from_device=&#39;DEVICEIDXY&#39;,
+                    method=&#39;m.sas.v1&#39;,
+                    key_agreement_protocols=[
+                        &#39;curve25519-hkdf-sha256&#39;, &#39;curve25519&#39;],
+                    hashes=[&#39;sha256&#39;],
+                    message_authentication_codes=[
+                        &#39;hkdf-hmac-sha256&#39;, &#39;hmac-sha256&#39;],
+                    short_authentication_string=[&#39;decimal&#39;, &#39;emoji&#39;])
+                &#34;&#34;&#34;
+
+                if &#34;emoji&#34; not in event.short_authentication_string:
+                    estr = (
+                        &#34;Other device does not support emoji verification &#34;
+                        f&#34;{event.short_authentication_string}. Aborting.&#34;
+                    )
+                    print(estr)
+                    LOGGER.info(estr)
+                    return
+                resp = await client.accept_key_verification(event.transaction_id)
+                if isinstance(resp, ToDeviceError):
+                    estr = f&#34;accept_key_verification() failed with {resp}&#34;
+                    print(estr)
+                    LOGGER.info(estr)
+
+                sas = client.key_verifications[event.transaction_id]
+
+                todevice_msg = sas.share_key()
+                resp = await client.to_device(todevice_msg)
+                if isinstance(resp, ToDeviceError):
+                    estr = f&#34;to_device() failed with {resp}&#34;
+                    print(estr)
+                    LOGGER.info(estr)
+
+            elif isinstance(event, KeyVerificationCancel):  # anytime
+                &#34;&#34;&#34;at any time: receive KeyVerificationCancel
+                KeyVerificationCancel(source={
+                    &#39;content&#39;: {&#39;code&#39;: &#39;m.mismatched_sas&#39;,
+                                &#39;reason&#39;: &#39;Mismatched authentication string&#39;,
+                                &#39;transaction_id&#39;: &#39;SomeTxId&#39;},
+                    &#39;type&#39;: &#39;m.key.verification.cancel&#39;,
+                    &#39;sender&#39;: &#39;@user2:example.org&#39;},
+                    sender=&#39;@user2:example.org&#39;,
+                    transaction_id=&#39;SomeTxId&#39;,
+                    code=&#39;m.mismatched_sas&#39;,
+                    reason=&#39;Mismatched short authentication string&#39;)
+                &#34;&#34;&#34;
+
+                # There is no need to issue a
+                # client.cancel_key_verification(tx_id, reject=False)
+                # here. The SAS flow is already cancelled.
+                # We only need to inform the user.
+                estr = (
+                    f&#34;Verification has been cancelled by {event.sender} &#34;
+                    f&#39;for reason &#34;{event.reason}&#34;.&#39;
+                )
+                print(estr)
+                LOGGER.info(estr)
+
+            elif isinstance(event, KeyVerificationKey):  # second step
+                &#34;&#34;&#34;Second step is to receive KeyVerificationKey
+                KeyVerificationKey(
+                    source={&#39;content&#39;: {
+                            &#39;key&#39;: &#39;SomeCryptoKey&#39;,
+                            &#39;transaction_id&#39;: &#39;SomeTxId&#39;},
+                        &#39;type&#39;: &#39;m.key.verification.key&#39;,
+                        &#39;sender&#39;: &#39;@user2:example.org&#39;
+                    },
+                    sender=&#39;@user2:example.org&#39;,
+                    transaction_id=&#39;SomeTxId&#39;,
+                    key=&#39;SomeCryptoKey&#39;)
+                &#34;&#34;&#34;
+                sas = client.key_verifications[event.transaction_id]
+
+                print(f&#34;{sas.get_emoji()}&#34;)
+                # don&#39;t log the emojis
+
+                # The bot process must run in forground with a screen and
+                # keyboard so that user can accept/reject via keyboard.
+                # For emoji verification bot must not run as service or
+                # in background.
+                yn = input(&#34;Do the emojis match? (Y/N) (C for Cancel) &#34;)
+                if yn.lower() == &#34;y&#34;:
+                    estr = (
+                        &#34;Match! The verification for this &#34; &#34;device will be accepted.&#34;
+                    )
+                    print(estr)
+                    LOGGER.info(estr)
+                    resp = await client.confirm_short_auth_string(event.transaction_id)
+                    if isinstance(resp, ToDeviceError):
+                        estr = &#34;confirm_short_auth_string() &#34; f&#34;failed with {resp}&#34;
+                        print(estr)
+                        LOGGER.info(estr)
+                elif yn.lower() == &#34;n&#34;:  # no, don&#39;t match, reject
+                    estr = (
+                        &#34;No match! Device will NOT be verified &#34;
+                        &#34;by rejecting verification.&#34;
+                    )
+                    print(estr)
+                    LOGGER.info(estr)
+                    resp = await client.cancel_key_verification(
+                        event.transaction_id, reject=True
+                    )
+                    if isinstance(resp, ToDeviceError):
+                        estr = f&#34;cancel_key_verification failed with {resp}&#34;
+                        print(estr)
+                        LOGGER.info(estr)
+                else:  # C or anything for cancel
+                    estr = &#34;Cancelled by user! Verification will be &#34; &#34;cancelled.&#34;
+                    print(estr)
+                    LOGGER.info(estr)
+                    resp = await client.cancel_key_verification(
+                        event.transaction_id, reject=False
+                    )
+                    if isinstance(resp, ToDeviceError):
+                        estr = f&#34;cancel_key_verification failed with {resp}&#34;
+                        print(estr)
+                        LOGGER.info(estr)
+
+            elif isinstance(event, KeyVerificationMac):  # third step
+                &#34;&#34;&#34;Third step is to receive KeyVerificationMac
+                KeyVerificationMac(
+                    source={&#39;content&#39;: {
+                        &#39;mac&#39;: {&#39;ed25519:DEVICEIDXY&#39;: &#39;SomeKey1&#39;,
+                                &#39;ed25519:SomeKey2&#39;: &#39;SomeKey3&#39;},
+                        &#39;keys&#39;: &#39;SomeCryptoKey4&#39;,
+                        &#39;transaction_id&#39;: &#39;SomeTxId&#39;},
+                        &#39;type&#39;: &#39;m.key.verification.mac&#39;,
+                        &#39;sender&#39;: &#39;@user2:example.org&#39;},
+                    sender=&#39;@user2:example.org&#39;,
+                    transaction_id=&#39;SomeTxId&#39;,
+                    mac={&#39;ed25519:DEVICEIDXY&#39;: &#39;SomeKey1&#39;,
+                         &#39;ed25519:SomeKey2&#39;: &#39;SomeKey3&#39;},
+                    keys=&#39;SomeCryptoKey4&#39;)
+                &#34;&#34;&#34;
+                sas = client.key_verifications[event.transaction_id]
+                try:
+                    todevice_msg = sas.get_mac()
+                except LocalProtocolError as e:
+                    # e.g. it might have been cancelled by ourselves
+                    estr = (
+                        f&#34;Cancelled or protocol error: Reason: {e}.\n&#34;
+                        f&#34;Verification with {event.sender} not concluded. &#34;
+                        &#34;Try again?&#34;
+                    )
+                    print(estr)
+                    LOGGER.info(estr)
+                else:
+                    resp = await client.to_device(todevice_msg)
+                    if isinstance(resp, ToDeviceError):
+                        estr = f&#34;to_device failed with {resp}&#34;
+                        print(estr)
+                        LOGGER.info(estr)
+                    estr = (
+                        f&#34;sas.we_started_it = {sas.we_started_it}\n&#34;
+                        f&#34;sas.sas_accepted = {sas.sas_accepted}\n&#34;
+                        f&#34;sas.canceled = {sas.canceled}\n&#34;
+                        f&#34;sas.timed_out = {sas.timed_out}\n&#34;
+                        f&#34;sas.verified = {sas.verified}\n&#34;
+                        f&#34;sas.verified_devices = {sas.verified_devices}\n&#34;
+                    )
+                    print(estr)
+                    LOGGER.info(estr)
+                    estr = (
+                        &#34;Emoji verification was successful!\n&#34;
+                        &#34;Initiate another Emoji verification from &#34;
+                        &#34;another device or room if desired. &#34;
+                        &#34;Or if done verifying, hit Control-C to stop the &#34;
+                        &#34;bot in order to restart it as a service or to &#34;
+                        &#34;run it in the background.&#34;
+                    )
+                    print(estr)
+                    LOGGER.info(estr)
+            else:
+                estr = (
+                    f&#34;Received unexpected event type {type(event)}. &#34;
+                    f&#34;Event is {event}. Event will be ignored.&#34;
+                )
+                print(estr)
+                LOGGER.info(estr)
+        except BaseException:
+            estr = traceback.format_exc()
+            print(estr)
+            LOGGER.info(estr)</code></pre>
+</details>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-functions">Functions</h2>
+<dl>
+<dt id="trappedbot.callbacks.in_dms"><code class="name flex">
+<span>def <span class="ident">in_dms</span></span>(<span>room: nio.rooms.MatrixRoom) ‑> bool</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Are we in DMs, or in a larger room?</p>
+<p>TODO: is there a better way to determine this?</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def in_dms(room: MatrixRoom) -&gt; bool:
+    &#34;&#34;&#34;Are we in DMs, or in a larger room?
+
+    TODO: is there a better way to determine this?
+    &#34;&#34;&#34;
+    # room.is_group is often a DM, but not always.
+    # room.is_group does not allow room aliases
+    # room.member_count &gt; 2 ... we assume a public room
+    # room.member_count &lt;= 2 ... we assume a DM
+    return room.member_count &lt;= 2</code></pre>
+</details>
+</dd>
+<dt id="trappedbot.callbacks.msglog"><code class="name flex">
+<span>def <span class="ident">msglog</span></span>(<span>logline: str, room: nio.rooms.MatrixRoom, event: nio.events.room_events.RoomMessageText)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Log a line with room name/user/message metadata</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def msglog(logline: str, room: MatrixRoom, event: RoomMessageText):
+    &#34;&#34;&#34;Log a line with room name/user/message metadata&#34;&#34;&#34;
+    LOGGER.debug(
+        f&#34;{logline} % {room.display_name} | {room.user_name(event.sender)}: {event.body}&#34;
+    )</code></pre>
+</details>
+</dd>
+</dl>
+</section>
+<section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="trappedbot.callbacks.Callbacks"><code class="flex name class">
+<span>class <span class="ident">Callbacks</span></span>
+<span>(</span><span>client: nio.client.async_client.AsyncClient, store: <a title="trappedbot.storage.Storage" href="storage.html#trappedbot.storage.Storage">Storage</a>)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Collection of all callbacks.</p>
+<p>Initialize.</p>
+<h2 id="arguments">Arguments:</h2>
+<pre><code>client (nio.AsyncClient): nio client used to interact with matrix
+store (Storage): Bot storage
+</code></pre></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class Callbacks(object):
+    &#34;&#34;&#34;Collection of all callbacks.&#34;&#34;&#34;
+
+    def __init__(self, client: AsyncClient, store: Storage):
+        &#34;&#34;&#34;Initialize.
+
+        Arguments:
+        ---------
+            client (nio.AsyncClient): nio client used to interact with matrix
+            store (Storage): Bot storage
+        &#34;&#34;&#34;
+        self.client = client
+        self.store = store
+
+    async def message(self, room: MatrixRoom, event: RoomMessageText):
+        &#34;&#34;&#34;Handle an incoming message event.
+
+        room:   The room the event came from
+        event:  The event defining the message
+        &#34;&#34;&#34;
+        config = appconfig.get()
+
+        if event.sender == self.client.user:
+            msglog(&#34;Ignoring message from myself&#34;, room, event)
+            return
+        elif event.body.startswith(config.command_prefix):
+            msg = event.body[len(config.command_prefix) :]
+            await process_command(self.client, msg, room, event)
+            return
+        else:
+            for response in config.responses.responses:
+                if response.regex.search(event.body):
+                    await send_text_to_room(
+                        self.client,
+                        room.room_id,
+                        response.message,
+                        replyto=event,
+                        replyto_room=room,
+                    )
+            return
+
+    async def invite(self, room, event):
+        &#34;&#34;&#34;Handle an incoming invite event.
+
+        If an invite is received, then join the room specified in the invite.
+        &#34;&#34;&#34;
+        LOGGER.debug(f&#34;Got invite to {room.room_id} from {event.sender}.&#34;)
+
+        # Attempt to join 3 times before giving up
+        for attempt in range(3):
+            result = await self.client.join(room.room_id)
+            if type(result) == JoinError:
+                LOGGER.error(
+                    f&#34;Error joining room {room.room_id} (attempt %d): %s&#34;,
+                    attempt,
+                    result.message,
+                )
+            else:
+                break
+        else:
+            LOGGER.error(&#34;Unable to join room: %s&#34;, room.room_id)
+
+        # Successfully joined room
+        LOGGER.info(f&#34;Joined {room.room_id}&#34;)
+
+    async def to_device_cb(self, event):  # noqa
+        &#34;&#34;&#34;Handle events sent to device.
+
+        Specifically this will perform Emoji verification.
+        It will accept an incoming Emoji verification requests
+        and follow the verification protocol.
+        &#34;&#34;&#34;
+        try:
+            client = self.client
+            LOGGER.debug(
+                f&#34;Device Event of type {type(event)} received in &#34; &#34;to_device_cb().&#34;
+            )
+
+            if isinstance(event, KeyVerificationStart):  # first step
+                &#34;&#34;&#34;first step: receive KeyVerificationStart
+                KeyVerificationStart(
+                    source={&#39;content&#39;:
+                            {&#39;method&#39;: &#39;m.sas.v1&#39;,
+                             &#39;from_device&#39;: &#39;DEVICEIDXY&#39;,
+                             &#39;key_agreement_protocols&#39;:
+                                [&#39;curve25519-hkdf-sha256&#39;, &#39;curve25519&#39;],
+                             &#39;hashes&#39;: [&#39;sha256&#39;],
+                             &#39;message_authentication_codes&#39;:
+                                [&#39;hkdf-hmac-sha256&#39;, &#39;hmac-sha256&#39;],
+                             &#39;short_authentication_string&#39;:
+                                [&#39;decimal&#39;, &#39;emoji&#39;],
+                             &#39;transaction_id&#39;: &#39;SomeTxId&#39;
+                             },
+                            &#39;type&#39;: &#39;m.key.verification.start&#39;,
+                            &#39;sender&#39;: &#39;@user2:example.org&#39;
+                            },
+                    sender=&#39;@user2:example.org&#39;,
+                    transaction_id=&#39;SomeTxId&#39;,
+                    from_device=&#39;DEVICEIDXY&#39;,
+                    method=&#39;m.sas.v1&#39;,
+                    key_agreement_protocols=[
+                        &#39;curve25519-hkdf-sha256&#39;, &#39;curve25519&#39;],
+                    hashes=[&#39;sha256&#39;],
+                    message_authentication_codes=[
+                        &#39;hkdf-hmac-sha256&#39;, &#39;hmac-sha256&#39;],
+                    short_authentication_string=[&#39;decimal&#39;, &#39;emoji&#39;])
+                &#34;&#34;&#34;
+
+                if &#34;emoji&#34; not in event.short_authentication_string:
+                    estr = (
+                        &#34;Other device does not support emoji verification &#34;
+                        f&#34;{event.short_authentication_string}. Aborting.&#34;
+                    )
+                    print(estr)
+                    LOGGER.info(estr)
+                    return
+                resp = await client.accept_key_verification(event.transaction_id)
+                if isinstance(resp, ToDeviceError):
+                    estr = f&#34;accept_key_verification() failed with {resp}&#34;
+                    print(estr)
+                    LOGGER.info(estr)
+
+                sas = client.key_verifications[event.transaction_id]
+
+                todevice_msg = sas.share_key()
+                resp = await client.to_device(todevice_msg)
+                if isinstance(resp, ToDeviceError):
+                    estr = f&#34;to_device() failed with {resp}&#34;
+                    print(estr)
+                    LOGGER.info(estr)
+
+            elif isinstance(event, KeyVerificationCancel):  # anytime
+                &#34;&#34;&#34;at any time: receive KeyVerificationCancel
+                KeyVerificationCancel(source={
+                    &#39;content&#39;: {&#39;code&#39;: &#39;m.mismatched_sas&#39;,
+                                &#39;reason&#39;: &#39;Mismatched authentication string&#39;,
+                                &#39;transaction_id&#39;: &#39;SomeTxId&#39;},
+                    &#39;type&#39;: &#39;m.key.verification.cancel&#39;,
+                    &#39;sender&#39;: &#39;@user2:example.org&#39;},
+                    sender=&#39;@user2:example.org&#39;,
+                    transaction_id=&#39;SomeTxId&#39;,
+                    code=&#39;m.mismatched_sas&#39;,
+                    reason=&#39;Mismatched short authentication string&#39;)
+                &#34;&#34;&#34;
+
+                # There is no need to issue a
+                # client.cancel_key_verification(tx_id, reject=False)
+                # here. The SAS flow is already cancelled.
+                # We only need to inform the user.
+                estr = (
+                    f&#34;Verification has been cancelled by {event.sender} &#34;
+                    f&#39;for reason &#34;{event.reason}&#34;.&#39;
+                )
+                print(estr)
+                LOGGER.info(estr)
+
+            elif isinstance(event, KeyVerificationKey):  # second step
+                &#34;&#34;&#34;Second step is to receive KeyVerificationKey
+                KeyVerificationKey(
+                    source={&#39;content&#39;: {
+                            &#39;key&#39;: &#39;SomeCryptoKey&#39;,
+                            &#39;transaction_id&#39;: &#39;SomeTxId&#39;},
+                        &#39;type&#39;: &#39;m.key.verification.key&#39;,
+                        &#39;sender&#39;: &#39;@user2:example.org&#39;
+                    },
+                    sender=&#39;@user2:example.org&#39;,
+                    transaction_id=&#39;SomeTxId&#39;,
+                    key=&#39;SomeCryptoKey&#39;)
+                &#34;&#34;&#34;
+                sas = client.key_verifications[event.transaction_id]
+
+                print(f&#34;{sas.get_emoji()}&#34;)
+                # don&#39;t log the emojis
+
+                # The bot process must run in forground with a screen and
+                # keyboard so that user can accept/reject via keyboard.
+                # For emoji verification bot must not run as service or
+                # in background.
+                yn = input(&#34;Do the emojis match? (Y/N) (C for Cancel) &#34;)
+                if yn.lower() == &#34;y&#34;:
+                    estr = (
+                        &#34;Match! The verification for this &#34; &#34;device will be accepted.&#34;
+                    )
+                    print(estr)
+                    LOGGER.info(estr)
+                    resp = await client.confirm_short_auth_string(event.transaction_id)
+                    if isinstance(resp, ToDeviceError):
+                        estr = &#34;confirm_short_auth_string() &#34; f&#34;failed with {resp}&#34;
+                        print(estr)
+                        LOGGER.info(estr)
+                elif yn.lower() == &#34;n&#34;:  # no, don&#39;t match, reject
+                    estr = (
+                        &#34;No match! Device will NOT be verified &#34;
+                        &#34;by rejecting verification.&#34;
+                    )
+                    print(estr)
+                    LOGGER.info(estr)
+                    resp = await client.cancel_key_verification(
+                        event.transaction_id, reject=True
+                    )
+                    if isinstance(resp, ToDeviceError):
+                        estr = f&#34;cancel_key_verification failed with {resp}&#34;
+                        print(estr)
+                        LOGGER.info(estr)
+                else:  # C or anything for cancel
+                    estr = &#34;Cancelled by user! Verification will be &#34; &#34;cancelled.&#34;
+                    print(estr)
+                    LOGGER.info(estr)
+                    resp = await client.cancel_key_verification(
+                        event.transaction_id, reject=False
+                    )
+                    if isinstance(resp, ToDeviceError):
+                        estr = f&#34;cancel_key_verification failed with {resp}&#34;
+                        print(estr)
+                        LOGGER.info(estr)
+
+            elif isinstance(event, KeyVerificationMac):  # third step
+                &#34;&#34;&#34;Third step is to receive KeyVerificationMac
+                KeyVerificationMac(
+                    source={&#39;content&#39;: {
+                        &#39;mac&#39;: {&#39;ed25519:DEVICEIDXY&#39;: &#39;SomeKey1&#39;,
+                                &#39;ed25519:SomeKey2&#39;: &#39;SomeKey3&#39;},
+                        &#39;keys&#39;: &#39;SomeCryptoKey4&#39;,
+                        &#39;transaction_id&#39;: &#39;SomeTxId&#39;},
+                        &#39;type&#39;: &#39;m.key.verification.mac&#39;,
+                        &#39;sender&#39;: &#39;@user2:example.org&#39;},
+                    sender=&#39;@user2:example.org&#39;,
+                    transaction_id=&#39;SomeTxId&#39;,
+                    mac={&#39;ed25519:DEVICEIDXY&#39;: &#39;SomeKey1&#39;,
+                         &#39;ed25519:SomeKey2&#39;: &#39;SomeKey3&#39;},
+                    keys=&#39;SomeCryptoKey4&#39;)
+                &#34;&#34;&#34;
+                sas = client.key_verifications[event.transaction_id]
+                try:
+                    todevice_msg = sas.get_mac()
+                except LocalProtocolError as e:
+                    # e.g. it might have been cancelled by ourselves
+                    estr = (
+                        f&#34;Cancelled or protocol error: Reason: {e}.\n&#34;
+                        f&#34;Verification with {event.sender} not concluded. &#34;
+                        &#34;Try again?&#34;
+                    )
+                    print(estr)
+                    LOGGER.info(estr)
+                else:
+                    resp = await client.to_device(todevice_msg)
+                    if isinstance(resp, ToDeviceError):
+                        estr = f&#34;to_device failed with {resp}&#34;
+                        print(estr)
+                        LOGGER.info(estr)
+                    estr = (
+                        f&#34;sas.we_started_it = {sas.we_started_it}\n&#34;
+                        f&#34;sas.sas_accepted = {sas.sas_accepted}\n&#34;
+                        f&#34;sas.canceled = {sas.canceled}\n&#34;
+                        f&#34;sas.timed_out = {sas.timed_out}\n&#34;
+                        f&#34;sas.verified = {sas.verified}\n&#34;
+                        f&#34;sas.verified_devices = {sas.verified_devices}\n&#34;
+                    )
+                    print(estr)
+                    LOGGER.info(estr)
+                    estr = (
+                        &#34;Emoji verification was successful!\n&#34;
+                        &#34;Initiate another Emoji verification from &#34;
+                        &#34;another device or room if desired. &#34;
+                        &#34;Or if done verifying, hit Control-C to stop the &#34;
+                        &#34;bot in order to restart it as a service or to &#34;
+                        &#34;run it in the background.&#34;
+                    )
+                    print(estr)
+                    LOGGER.info(estr)
+            else:
+                estr = (
+                    f&#34;Received unexpected event type {type(event)}. &#34;
+                    f&#34;Event is {event}. Event will be ignored.&#34;
+                )
+                print(estr)
+                LOGGER.info(estr)
+        except BaseException:
+            estr = traceback.format_exc()
+            print(estr)
+            LOGGER.info(estr)</code></pre>
+</details>
+<h3>Methods</h3>
+<dl>
+<dt id="trappedbot.callbacks.Callbacks.invite"><code class="name flex">
+<span>async def <span class="ident">invite</span></span>(<span>self, room, event)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Handle an incoming invite event.</p>
+<p>If an invite is received, then join the room specified in the invite.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">async def invite(self, room, event):
+    &#34;&#34;&#34;Handle an incoming invite event.
+
+    If an invite is received, then join the room specified in the invite.
+    &#34;&#34;&#34;
+    LOGGER.debug(f&#34;Got invite to {room.room_id} from {event.sender}.&#34;)
+
+    # Attempt to join 3 times before giving up
+    for attempt in range(3):
+        result = await self.client.join(room.room_id)
+        if type(result) == JoinError:
+            LOGGER.error(
+                f&#34;Error joining room {room.room_id} (attempt %d): %s&#34;,
+                attempt,
+                result.message,
+            )
+        else:
+            break
+    else:
+        LOGGER.error(&#34;Unable to join room: %s&#34;, room.room_id)
+
+    # Successfully joined room
+    LOGGER.info(f&#34;Joined {room.room_id}&#34;)</code></pre>
+</details>
+</dd>
+<dt id="trappedbot.callbacks.Callbacks.message"><code class="name flex">
+<span>async def <span class="ident">message</span></span>(<span>self, room: nio.rooms.MatrixRoom, event: nio.events.room_events.RoomMessageText)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Handle an incoming message event.</p>
+<p>room:
+The room the event came from
+event:
+The event defining the message</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">async def message(self, room: MatrixRoom, event: RoomMessageText):
+    &#34;&#34;&#34;Handle an incoming message event.
+
+    room:   The room the event came from
+    event:  The event defining the message
+    &#34;&#34;&#34;
+    config = appconfig.get()
+
+    if event.sender == self.client.user:
+        msglog(&#34;Ignoring message from myself&#34;, room, event)
+        return
+    elif event.body.startswith(config.command_prefix):
+        msg = event.body[len(config.command_prefix) :]
+        await process_command(self.client, msg, room, event)
+        return
+    else:
+        for response in config.responses.responses:
+            if response.regex.search(event.body):
+                await send_text_to_room(
+                    self.client,
+                    room.room_id,
+                    response.message,
+                    replyto=event,
+                    replyto_room=room,
+                )
+        return</code></pre>
+</details>
+</dd>
+<dt id="trappedbot.callbacks.Callbacks.to_device_cb"><code class="name flex">
+<span>async def <span class="ident">to_device_cb</span></span>(<span>self, event)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Handle events sent to device.</p>
+<p>Specifically this will perform Emoji verification.
+It will accept an incoming Emoji verification requests
+and follow the verification protocol.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">async def to_device_cb(self, event):  # noqa
+    &#34;&#34;&#34;Handle events sent to device.
+
+    Specifically this will perform Emoji verification.
+    It will accept an incoming Emoji verification requests
+    and follow the verification protocol.
+    &#34;&#34;&#34;
+    try:
+        client = self.client
+        LOGGER.debug(
+            f&#34;Device Event of type {type(event)} received in &#34; &#34;to_device_cb().&#34;
+        )
+
+        if isinstance(event, KeyVerificationStart):  # first step
+            &#34;&#34;&#34;first step: receive KeyVerificationStart
+            KeyVerificationStart(
+                source={&#39;content&#39;:
+                        {&#39;method&#39;: &#39;m.sas.v1&#39;,
+                         &#39;from_device&#39;: &#39;DEVICEIDXY&#39;,
+                         &#39;key_agreement_protocols&#39;:
+                            [&#39;curve25519-hkdf-sha256&#39;, &#39;curve25519&#39;],
+                         &#39;hashes&#39;: [&#39;sha256&#39;],
+                         &#39;message_authentication_codes&#39;:
+                            [&#39;hkdf-hmac-sha256&#39;, &#39;hmac-sha256&#39;],
+                         &#39;short_authentication_string&#39;:
+                            [&#39;decimal&#39;, &#39;emoji&#39;],
+                         &#39;transaction_id&#39;: &#39;SomeTxId&#39;
+                         },
+                        &#39;type&#39;: &#39;m.key.verification.start&#39;,
+                        &#39;sender&#39;: &#39;@user2:example.org&#39;
+                        },
+                sender=&#39;@user2:example.org&#39;,
+                transaction_id=&#39;SomeTxId&#39;,
+                from_device=&#39;DEVICEIDXY&#39;,
+                method=&#39;m.sas.v1&#39;,
+                key_agreement_protocols=[
+                    &#39;curve25519-hkdf-sha256&#39;, &#39;curve25519&#39;],
+                hashes=[&#39;sha256&#39;],
+                message_authentication_codes=[
+                    &#39;hkdf-hmac-sha256&#39;, &#39;hmac-sha256&#39;],
+                short_authentication_string=[&#39;decimal&#39;, &#39;emoji&#39;])
+            &#34;&#34;&#34;
+
+            if &#34;emoji&#34; not in event.short_authentication_string:
+                estr = (
+                    &#34;Other device does not support emoji verification &#34;
+                    f&#34;{event.short_authentication_string}. Aborting.&#34;
+                )
+                print(estr)
+                LOGGER.info(estr)
+                return
+            resp = await client.accept_key_verification(event.transaction_id)
+            if isinstance(resp, ToDeviceError):
+                estr = f&#34;accept_key_verification() failed with {resp}&#34;
+                print(estr)
+                LOGGER.info(estr)
+
+            sas = client.key_verifications[event.transaction_id]
+
+            todevice_msg = sas.share_key()
+            resp = await client.to_device(todevice_msg)
+            if isinstance(resp, ToDeviceError):
+                estr = f&#34;to_device() failed with {resp}&#34;
+                print(estr)
+                LOGGER.info(estr)
+
+        elif isinstance(event, KeyVerificationCancel):  # anytime
+            &#34;&#34;&#34;at any time: receive KeyVerificationCancel
+            KeyVerificationCancel(source={
+                &#39;content&#39;: {&#39;code&#39;: &#39;m.mismatched_sas&#39;,
+                            &#39;reason&#39;: &#39;Mismatched authentication string&#39;,
+                            &#39;transaction_id&#39;: &#39;SomeTxId&#39;},
+                &#39;type&#39;: &#39;m.key.verification.cancel&#39;,
+                &#39;sender&#39;: &#39;@user2:example.org&#39;},
+                sender=&#39;@user2:example.org&#39;,
+                transaction_id=&#39;SomeTxId&#39;,
+                code=&#39;m.mismatched_sas&#39;,
+                reason=&#39;Mismatched short authentication string&#39;)
+            &#34;&#34;&#34;
+
+            # There is no need to issue a
+            # client.cancel_key_verification(tx_id, reject=False)
+            # here. The SAS flow is already cancelled.
+            # We only need to inform the user.
+            estr = (
+                f&#34;Verification has been cancelled by {event.sender} &#34;
+                f&#39;for reason &#34;{event.reason}&#34;.&#39;
+            )
+            print(estr)
+            LOGGER.info(estr)
+
+        elif isinstance(event, KeyVerificationKey):  # second step
+            &#34;&#34;&#34;Second step is to receive KeyVerificationKey
+            KeyVerificationKey(
+                source={&#39;content&#39;: {
+                        &#39;key&#39;: &#39;SomeCryptoKey&#39;,
+                        &#39;transaction_id&#39;: &#39;SomeTxId&#39;},
+                    &#39;type&#39;: &#39;m.key.verification.key&#39;,
+                    &#39;sender&#39;: &#39;@user2:example.org&#39;
+                },
+                sender=&#39;@user2:example.org&#39;,
+                transaction_id=&#39;SomeTxId&#39;,
+                key=&#39;SomeCryptoKey&#39;)
+            &#34;&#34;&#34;
+            sas = client.key_verifications[event.transaction_id]
+
+            print(f&#34;{sas.get_emoji()}&#34;)
+            # don&#39;t log the emojis
+
+            # The bot process must run in forground with a screen and
+            # keyboard so that user can accept/reject via keyboard.
+            # For emoji verification bot must not run as service or
+            # in background.
+            yn = input(&#34;Do the emojis match? (Y/N) (C for Cancel) &#34;)
+            if yn.lower() == &#34;y&#34;:
+                estr = (
+                    &#34;Match! The verification for this &#34; &#34;device will be accepted.&#34;
+                )
+                print(estr)
+                LOGGER.info(estr)
+                resp = await client.confirm_short_auth_string(event.transaction_id)
+                if isinstance(resp, ToDeviceError):
+                    estr = &#34;confirm_short_auth_string() &#34; f&#34;failed with {resp}&#34;
+                    print(estr)
+                    LOGGER.info(estr)
+            elif yn.lower() == &#34;n&#34;:  # no, don&#39;t match, reject
+                estr = (
+                    &#34;No match! Device will NOT be verified &#34;
+                    &#34;by rejecting verification.&#34;
+                )
+                print(estr)
+                LOGGER.info(estr)
+                resp = await client.cancel_key_verification(
+                    event.transaction_id, reject=True
+                )
+                if isinstance(resp, ToDeviceError):
+                    estr = f&#34;cancel_key_verification failed with {resp}&#34;
+                    print(estr)
+                    LOGGER.info(estr)
+            else:  # C or anything for cancel
+                estr = &#34;Cancelled by user! Verification will be &#34; &#34;cancelled.&#34;
+                print(estr)
+                LOGGER.info(estr)
+                resp = await client.cancel_key_verification(
+                    event.transaction_id, reject=False
+                )
+                if isinstance(resp, ToDeviceError):
+                    estr = f&#34;cancel_key_verification failed with {resp}&#34;
+                    print(estr)
+                    LOGGER.info(estr)
+
+        elif isinstance(event, KeyVerificationMac):  # third step
+            &#34;&#34;&#34;Third step is to receive KeyVerificationMac
+            KeyVerificationMac(
+                source={&#39;content&#39;: {
+                    &#39;mac&#39;: {&#39;ed25519:DEVICEIDXY&#39;: &#39;SomeKey1&#39;,
+                            &#39;ed25519:SomeKey2&#39;: &#39;SomeKey3&#39;},
+                    &#39;keys&#39;: &#39;SomeCryptoKey4&#39;,
+                    &#39;transaction_id&#39;: &#39;SomeTxId&#39;},
+                    &#39;type&#39;: &#39;m.key.verification.mac&#39;,
+                    &#39;sender&#39;: &#39;@user2:example.org&#39;},
+                sender=&#39;@user2:example.org&#39;,
+                transaction_id=&#39;SomeTxId&#39;,
+                mac={&#39;ed25519:DEVICEIDXY&#39;: &#39;SomeKey1&#39;,
+                     &#39;ed25519:SomeKey2&#39;: &#39;SomeKey3&#39;},
+                keys=&#39;SomeCryptoKey4&#39;)
+            &#34;&#34;&#34;
+            sas = client.key_verifications[event.transaction_id]
+            try:
+                todevice_msg = sas.get_mac()
+            except LocalProtocolError as e:
+                # e.g. it might have been cancelled by ourselves
+                estr = (
+                    f&#34;Cancelled or protocol error: Reason: {e}.\n&#34;
+                    f&#34;Verification with {event.sender} not concluded. &#34;
+                    &#34;Try again?&#34;
+                )
+                print(estr)
+                LOGGER.info(estr)
+            else:
+                resp = await client.to_device(todevice_msg)
+                if isinstance(resp, ToDeviceError):
+                    estr = f&#34;to_device failed with {resp}&#34;
+                    print(estr)
+                    LOGGER.info(estr)
+                estr = (
+                    f&#34;sas.we_started_it = {sas.we_started_it}\n&#34;
+                    f&#34;sas.sas_accepted = {sas.sas_accepted}\n&#34;
+                    f&#34;sas.canceled = {sas.canceled}\n&#34;
+                    f&#34;sas.timed_out = {sas.timed_out}\n&#34;
+                    f&#34;sas.verified = {sas.verified}\n&#34;
+                    f&#34;sas.verified_devices = {sas.verified_devices}\n&#34;
+                )
+                print(estr)
+                LOGGER.info(estr)
+                estr = (
+                    &#34;Emoji verification was successful!\n&#34;
+                    &#34;Initiate another Emoji verification from &#34;
+                    &#34;another device or room if desired. &#34;
+                    &#34;Or if done verifying, hit Control-C to stop the &#34;
+                    &#34;bot in order to restart it as a service or to &#34;
+                    &#34;run it in the background.&#34;
+                )
+                print(estr)
+                LOGGER.info(estr)
+        else:
+            estr = (
+                f&#34;Received unexpected event type {type(event)}. &#34;
+                f&#34;Event is {event}. Event will be ignored.&#34;
+            )
+            print(estr)
+            LOGGER.info(estr)
+    except BaseException:
+        estr = traceback.format_exc()
+        print(estr)
+        LOGGER.info(estr)</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+</dl>
+</section>
+</article>
+<nav id="sidebar">
+<h1>Index</h1>
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="trappedbot" href="index.html">trappedbot</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-functions">Functions</a></h3>
+<ul class="">
+<li><code><a title="trappedbot.callbacks.in_dms" href="#trappedbot.callbacks.in_dms">in_dms</a></code></li>
+<li><code><a title="trappedbot.callbacks.msglog" href="#trappedbot.callbacks.msglog">msglog</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="trappedbot.callbacks.Callbacks" href="#trappedbot.callbacks.Callbacks">Callbacks</a></code></h4>
+<ul class="">
+<li><code><a title="trappedbot.callbacks.Callbacks.invite" href="#trappedbot.callbacks.Callbacks.invite">invite</a></code></li>
+<li><code><a title="trappedbot.callbacks.Callbacks.message" href="#trappedbot.callbacks.Callbacks.message">message</a></code></li>
+<li><code><a title="trappedbot.callbacks.Callbacks.to_device_cb" href="#trappedbot.callbacks.Callbacks.to_device_cb">to_device_cb</a></code></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc"><cite>pdoc</cite> 0.9.2</a>.</p>
+</footer>
+</body>
+</html>

@@ -14,8 +14,8 @@ def yamlobj2command(
     name: str,
     yamlobj: typing.Dict,
 ) -> typing.Optional[Command]:
-    if yamlobj.get("builtin"):
-        taskfunc = BUILTIN_TASKS[name].taskfunc
+    if (builtin_name := yamlobj.get("builtin")) :
+        taskfunc = BUILTIN_TASKS[builtin_name].taskfunc
     elif (cmd := yamlobj.get("systemcmd")) :
         taskfunc = systemcmd2taskfunc(cmd)
     elif (modpath := yamlobj.get("modulepath")) :

@@ -75,8 +75,11 @@ commands:
       - example.net
     allow_users:                # [Optional, default empty] Allow any user in this list to run this command
       - "@admin:example.com"
-  dbgecho:
-    builtin: dbgecho
+
+  # Note that the command name (dict key) can be different from the internal task name of the builtin command
+  debug_echo:                   # This is the command name - you will type this to your bot
+    builtin: dbgecho            # This is the task name - the bot will run a builtin task called this.
+                                # (Users will not need to know this.)
     help: Echoes back input with some other debugging info
     allow_untrusted: yes
   version:
@@ -96,8 +99,12 @@ commands:
                                 # You can also provide an absolute path to the systemcmd
     help: Shows uptime for the server runnig the bot
     allow_untrusted: yes
-  whoami:
-    systemcmd: whoami
+
+  # Here too, command names can be different from the name of the program to run
+  whoru:                        # This is the command name - you will type this to your bot
+    systemcmd: whoami           # This is the name of the program that will run on your system
+                                # This must be in the bot's $PATH
+                                # or you may provide an absolute path like /path/to/script.sh.
     help: Shows the Unix user that the bot is running under
     allow_untrusted: yes
   hostname:

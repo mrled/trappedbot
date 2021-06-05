@@ -22,6 +22,9 @@
     * Allow text responses only in specific rooms
     * Builtin tasks should be able to have separate names, e.g. 'builtin: echo' not 'echo: builtin: yes'
     * I have config.commands.commands['cmdname'] (and similar for responses); make this look nicer
+    * Fix bot help - it shows "no help is available" for all tasks except builtin ones
+    * Clean up bot help output. Possibly with markdown, possibly in a table.
+    * Add a command to list all responses.
 * Docs
     * Some of the old scripts were just docs placeholders for the user to write a real implementation, e.g. `backup.sh`; write docs instead?
     * Publish somewhere like readthedocs or github pages?

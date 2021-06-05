@@ -15,8 +15,6 @@
         * Long, familiar stuff like The Office, Friends, etc, is nice because you can put it on in the background and enjoy it without paying too much attention
         * For novel stuff, something very short is probably better, perhaps Made Out Of Meat
     * That makes me want to implement a game with Matrix bots
-    * Do not allow setting paths in task definition
-        * Make the user do this in the env before starting the bot, or specify full paths to executables
     * Don't ask users to care about change_device_name.
     * Allow text responses only in specific rooms
     * Builtin tasks should be able to have separate names, e.g. 'builtin: echo' not 'echo: builtin: yes'

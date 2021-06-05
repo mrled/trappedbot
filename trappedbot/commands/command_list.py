@@ -43,17 +43,10 @@ def yamlobj2command(
     )
 
 
-class CommandList:
-    """A list of commands that our bot can perform"""
-
-    def __init__(self, commands: typing.Dict[str, Command]):
-        self.commands = commands
-
-    @classmethod
-    def from_yaml_obj(cls, commands_yaml_obj: typing.Any):
-        """Return a CommandList from a YAML object"""
-        commands: typing.Dict[str, Command] = {}
-        for cname, cdefn in commands_yaml_obj.items():
-            if (command := yamlobj2command(cname, cdefn)) :
-                commands[cname] = command
-        return cls(commands)
+def yamlobj2cmddict(commands_yaml_obj: typing.Any) -> typing.Dict[str, Command]:
+    """Return a CommandList from a YAML object"""
+    commands: typing.Dict[str, Command] = {}
+    for cname, cdefn in commands_yaml_obj.items():
+        if (command := yamlobj2command(cname, cdefn)) :
+            commands[cname] = command
+    return commands

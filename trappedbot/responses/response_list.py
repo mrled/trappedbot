@@ -31,20 +31,10 @@ def yamlobj2response(idx: int, yamlobj: typing.Dict) -> typing.Optional[Response
         return None
 
 
-class ResponseList:
-    """A list of responses
-
-    Contains all the responses that our bot can make.
-    """
-
-    def __init__(self, responses: typing.List[Response]):
-        self.responses = responses
-
-    @classmethod
-    def from_yaml_obj(cls, responses_yaml_obj: typing.Any) -> "ResponseList":
-        """Return a ResponseList from a yaml object"""
-        responses: typing.List[Response] = []
-        for idx, rdefn in enumerate(responses_yaml_obj):
-            if (response := yamlobj2response(idx, rdefn)) :
-                responses.append(response)
-        return cls(responses)
+def yamlobj2rsplist(responses_yaml_obj: typing.Any) -> typing.List[Response]:
+    """Return a ResponseList from a yaml object"""
+    responses: typing.List[Response] = []
+    for idx, rdefn in enumerate(responses_yaml_obj):
+        if (response := yamlobj2response(idx, rdefn)) :
+            responses.append(response)
+    return responses

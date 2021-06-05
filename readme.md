@@ -34,6 +34,43 @@ Build distributable packages:
 python -m build
 ```
 
+Run it:
+
+```sh
+trappedbot -h
+```
+
+If your libraries are installed to strange locations, you may need to modify your venv's `lib/python3.9/site-packages/magic/loader.py` so that it adds your snowflake location to its list of paths. Here's how I did mine:
+
+```python
+def _lib_candidates():
+
+  yield find_library('magic')
+
+  if sys.platform == 'darwin':
+
+    paths = [
+      '/opt/local/lib',
+      '/usr/local/lib',
+      '/opt/homebrew/lib',
+      '/Users/mrled/opt/homebrew/lib',                      #### I added this line
+    ] + glob.glob('/usr/local/Cellar/libmagic/*/lib')
+
+#...
+```
+
+Is that a bad hack??? Sure! Presumably if you're an an OS with a sane package manager this is not a problem.
+(Via: <https://github.com/ahupp/python-magic/issues/238#issuecomment-789287147>)
+
+Generating the docs:
+
+```sh
+pdoc --html trappedbot
+cd html/trappedbot
+python3 -m http.server
+# And then browse to http://localhost:8000 to view them
+```
+
 ## Running in production
 
 See the [systemd service definition file example](support/trappedbot.service) for how to run this under systemd.

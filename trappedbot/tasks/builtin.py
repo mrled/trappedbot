@@ -66,11 +66,11 @@ def builtin_task_help(
     format = MessageFormat.MARKDOWN
 
     topic_commands_lines = []
-    for cname, cmd in config.commands.commands.items():
+    for cname, cmd in config.commands.items():
         topic_commands_lines.append(f"- `{config.command_prefix} {cname}`: {cmd.help}")
 
     topic_responses_lines = []
-    for reply in config.responses.responses:
+    for reply in config.responses:
         topic_responses_lines.append(f"- `{reply.regex.pattern}` => `{reply.message}`")
 
     help_topics = HelpTopic("topics", "This help", "PLACEHOLDER")

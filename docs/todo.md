@@ -17,7 +17,6 @@
     * That makes me want to implement a game with Matrix bots
     * Don't ask users to care about change_device_name.
     * Allow text responses only in specific rooms
-    * I have config.commands.commands['cmdname'] (and similar for responses); make this look nicer
     * Explore hooking up argparse to the bot itself. Replace all my custom command processing crap.
 * Docs
     * Some of the old scripts were just docs placeholders for the user to write a real implementation, e.g. `backup.sh`; write docs instead?

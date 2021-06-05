@@ -20,13 +20,10 @@ from nio.client.async_client import AsyncClient
 from nio.events.room_events import RoomMessageText
 from nio.rooms import MatrixRoom
 
-import trappedbot
 from trappedbot import appconfig
 from trappedbot.applogger import LOGGER
 from trappedbot.chat_functions import send_text_to_room
-from trappedbot.commands.command import Command, process_command
-from trappedbot.commands.command_list import CommandList
-from trappedbot.responses.response_list import ResponseList
+from trappedbot.commands.command import process_command
 from trappedbot.storage import Storage
 from trappedbot.tasks.builtin import BUILTIN_TASKS
 
@@ -81,7 +78,7 @@ class Callbacks(object):
             await process_command(self.client, msg, room, event)
             return
         else:
-            for response in config.responses.responses:
+            for response in config.responses:
                 if response.regex.search(event.body):
                     await send_text_to_room(
                         self.client,

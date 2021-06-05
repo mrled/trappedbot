@@ -68,7 +68,7 @@ async def process_command(
 
     LOGGER.debug(f"commands :: Command.process: {input} {room}")
 
-    command = config.commands.commands.get(cmdname)
+    command = config.commands.get(cmdname)
     if not command:
         await send_text_to_room(
             client,

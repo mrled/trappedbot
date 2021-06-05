@@ -33,6 +33,7 @@
 These are not restricted to external system commands, but can just return Python code
 &#34;&#34;&#34;
 
+import dataclasses
 import platform
 import sys
 import typing
@@ -81,29 +82,56 @@ def builtin_task_platinfo(
     return TaskResult(result, MessageFormat.FORMATTED)
 
 
+@dataclasses.dataclass
+class HelpTopic:
+    name: str
+    help: str
+    detail: str
+
+
 def builtin_task_help(
     arguments: typing.List[str], context: TaskMessageContext
 ) -&gt; TaskResult:
     config = appconfig.get()
-    format = MessageFormat.NATURAL
+    format = MessageFormat.MARKDOWN
+
+    topic_commands_lines = []
+    for cname, cmd in config.commands.items():
+        topic_commands_lines.append(f&#34;- `{config.command_prefix} {cname}`: {cmd.help}&#34;)
+
+    topic_responses_lines = []
+    for reply in config.responses:
+        topic_responses_lines.append(f&#34;- `{reply.regex.pattern}` =&gt; `{reply.message}`&#34;)
+
+    help_topics = HelpTopic(&#34;topics&#34;, &#34;This help&#34;, &#34;PLACEHOLDER&#34;)
+
+    topics = [
+        help_topics,
+        HelpTopic(
+            &#34;commands&#34;, &#34;Show a list of commands&#34;, &#34;\n&#34;.join(topic_commands_lines)
+        ),
+        HelpTopic(
+            &#34;responses&#34;, &#34;Show a list of responses&#34;, &#34;\n&#34;.join(topic_responses_lines)
+        ),
+    ]
+    topicdict = {t.name: t for t in topics}
+
+    help_topics_lines = []
+    for t in topics:
+        help_topics_lines.append(f&#34;- **{t.name}**: {t.help}&#34;)
+    help_topics.detail = &#34;\n&#34;.join(help_topics_lines)
+
     if len(arguments) == 0:
-        output = (
-            f&#34;{HELP_TRAPPED_MSG} Use &#39;help commands&#39; to view things I can do from here&#34;
-        )
-    elif len(arguments) == 1:
-        topic = arguments[0]
-        if topic == &#34;commands&#34;:
-            outlines = []
-            for cname, cmd in config.commands.commands.items():
-                outlines.append(f&#34;- {cname}: {cmd.help}&#34;)
-            output = &#34;\n&#34;.join(outlines)
-            format = MessageFormat.MARKDOWN
-        elif (command := config.commands.commands.get(topic)) :
-            output = f&#34;{topic}: {command.help}&#34;
-        else:
-            output = f&#34;Unknown help topic &#39;{topic}&#39;&#34;
+        outlines = [f&#34;{HELP_TRAPPED_MSG}&#34;, &#34;&#34;]
+        for t in topics:
+            outlines += [f&#34;- `{config.command_prefix} help {t.name}`: {t.help}&#34;]
+        output = &#34;\n&#34;.join(outlines)
     else:
-        output = f&#34;Not sure how to help you with &#39;{arguments}&#39;&#34;
+        topic = arguments[0]
+        if topic in topicdict:
+            output = topicdict[topic].detail
+        else:
+            output = f&#34;Unknown help command &#39;{arguments}&#39;&#34;
     return TaskResult(output, format)
 
 
@@ -187,25 +215,45 @@ BUILTIN_TASKS = {
     arguments: typing.List[str], context: TaskMessageContext
 ) -&gt; TaskResult:
     config = appconfig.get()
-    format = MessageFormat.NATURAL
+    format = MessageFormat.MARKDOWN
+
+    topic_commands_lines = []
+    for cname, cmd in config.commands.items():
+        topic_commands_lines.append(f&#34;- `{config.command_prefix} {cname}`: {cmd.help}&#34;)
+
+    topic_responses_lines = []
+    for reply in config.responses:
+        topic_responses_lines.append(f&#34;- `{reply.regex.pattern}` =&gt; `{reply.message}`&#34;)
+
+    help_topics = HelpTopic(&#34;topics&#34;, &#34;This help&#34;, &#34;PLACEHOLDER&#34;)
+
+    topics = [
+        help_topics,
+        HelpTopic(
+            &#34;commands&#34;, &#34;Show a list of commands&#34;, &#34;\n&#34;.join(topic_commands_lines)
+        ),
+        HelpTopic(
+            &#34;responses&#34;, &#34;Show a list of responses&#34;, &#34;\n&#34;.join(topic_responses_lines)
+        ),
+    ]
+    topicdict = {t.name: t for t in topics}
+
+    help_topics_lines = []
+    for t in topics:
+        help_topics_lines.append(f&#34;- **{t.name}**: {t.help}&#34;)
+    help_topics.detail = &#34;\n&#34;.join(help_topics_lines)
+
     if len(arguments) == 0:
-        output = (
-            f&#34;{HELP_TRAPPED_MSG} Use &#39;help commands&#39; to view things I can do from here&#34;
-        )
-    elif len(arguments) == 1:
-        topic = arguments[0]
-        if topic == &#34;commands&#34;:
-            outlines = []
-            for cname, cmd in config.commands.commands.items():
-                outlines.append(f&#34;- {cname}: {cmd.help}&#34;)
-            output = &#34;\n&#34;.join(outlines)
-            format = MessageFormat.MARKDOWN
-        elif (command := config.commands.commands.get(topic)) :
-            output = f&#34;{topic}: {command.help}&#34;
-        else:
-            output = f&#34;Unknown help topic &#39;{topic}&#39;&#34;
+        outlines = [f&#34;{HELP_TRAPPED_MSG}&#34;, &#34;&#34;]
+        for t in topics:
+            outlines += [f&#34;- `{config.command_prefix} help {t.name}`: {t.help}&#34;]
+        output = &#34;\n&#34;.join(outlines)
     else:
-        output = f&#34;Not sure how to help you with &#39;{arguments}&#39;&#34;
+        topic = arguments[0]
+        if topic in topicdict:
+            output = topicdict[topic].detail
+        else:
+            output = f&#34;Unknown help command &#39;{arguments}&#39;&#34;
     return TaskResult(output, format)</code></pre>
 </details>
 </dd>
@@ -238,6 +286,40 @@ BUILTIN_TASKS = {
 </dl>
 </section>
 <section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="trappedbot.tasks.builtin.HelpTopic"><code class="flex name class">
+<span>class <span class="ident">HelpTopic</span></span>
+<span>(</span><span>name: str, help: str, detail: str)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>HelpTopic(name: str, help: str, detail: str)</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class HelpTopic:
+    name: str
+    help: str
+    detail: str</code></pre>
+</details>
+<h3>Class variables</h3>
+<dl>
+<dt id="trappedbot.tasks.builtin.HelpTopic.detail"><code class="name">var <span class="ident">detail</span> : str</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="trappedbot.tasks.builtin.HelpTopic.help"><code class="name">var <span class="ident">help</span> : str</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="trappedbot.tasks.builtin.HelpTopic.name"><code class="name">var <span class="ident">name</span> : str</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+</dd>
+</dl>
 </section>
 </article>
 <nav id="sidebar">
@@ -257,6 +339,18 @@ BUILTIN_TASKS = {
 <li><code><a title="trappedbot.tasks.builtin.builtin_task_echo" href="#trappedbot.tasks.builtin.builtin_task_echo">builtin_task_echo</a></code></li>
 <li><code><a title="trappedbot.tasks.builtin.builtin_task_help" href="#trappedbot.tasks.builtin.builtin_task_help">builtin_task_help</a></code></li>
 <li><code><a title="trappedbot.tasks.builtin.builtin_task_platinfo" href="#trappedbot.tasks.builtin.builtin_task_platinfo">builtin_task_platinfo</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="trappedbot.tasks.builtin.HelpTopic" href="#trappedbot.tasks.builtin.HelpTopic">HelpTopic</a></code></h4>
+<ul class="">
+<li><code><a title="trappedbot.tasks.builtin.HelpTopic.detail" href="#trappedbot.tasks.builtin.HelpTopic.detail">detail</a></code></li>
+<li><code><a title="trappedbot.tasks.builtin.HelpTopic.help" href="#trappedbot.tasks.builtin.HelpTopic.help">help</a></code></li>
+<li><code><a title="trappedbot.tasks.builtin.HelpTopic.name" href="#trappedbot.tasks.builtin.HelpTopic.name">name</a></code></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>

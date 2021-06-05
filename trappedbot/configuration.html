@@ -40,17 +40,19 @@
 &#34;&#34;&#34;
 
 import json
-import logging
-import os
-import re
-from trappedbot.commands.builtin import BUILTIN_COMMANDS
 import typing
 
-import yaml
 
-from trappedbot.applogger import LOGGER
-from trappedbot.commands.command_list import CommandList
-from trappedbot.responses.response_list import ResponseList
+class ConfigError(RuntimeError):
+    &#34;&#34;&#34;Error encountered during reading the config file.
+
+    Arguments:
+        msg (str): The message displayed to the user on error
+    &#34;&#34;&#34;
+
+    def __init__(self, msg):
+        &#34;&#34;&#34;Set up.&#34;&#34;&#34;
+        super(ConfigError, self).__init__(&#34;%s&#34; % (msg,))
 
 
 class Configuration(typing.NamedTuple):
@@ -60,7 +62,6 @@ class Configuration(typing.NamedTuple):
     config_filepath: str = &#34;&#34;
     database_filepath: str = &#34;&#34;
     store_filepath: str = &#34;&#34;
-    task_dict_filepath: str = &#34;&#34;
     user_id: str = &#34;&#34;
     user_password: str = &#34;&#34;
     user_access_token: str = &#34;&#34;
@@ -71,8 +72,8 @@ class Configuration(typing.NamedTuple):
     change_device_name: bool = False
     command_prefix: str = &#34;&#34;
     trusted_users: typing.List[str] = []
-    commands: CommandList = CommandList({})
-    responses: ResponseList = ResponseList([])
+    commands: typing.Dict[str, &#34;Command&#34;] = {}
+    responses: typing.List[&#34;Response&#34;] = []
 
     def extension(self, section: str, setting: str):
         &#34;&#34;&#34;Retrieve an extension from the config
@@ -89,99 +90,7 @@ class Configuration(typing.NamedTuple):
         return value
 
     def __str__(self):
-        return json.dumps(self._asdict())
-
-
-class ConfigError(RuntimeError):
-    &#34;&#34;&#34;Error encountered during reading the config file.
-
-    Arguments:
-        msg (str): The message displayed to the user on error
-    &#34;&#34;&#34;
-
-    def __init__(self, msg):
-        &#34;&#34;&#34;Set up.&#34;&#34;&#34;
-        super(ConfigError, self).__init__(&#34;%s&#34; % (msg,))
-
-
-def parse_config(
-    filepath: str,
-    force_log_debug: bool = False,
-) -&gt; Configuration:
-    &#34;&#34;&#34;Parse a config file
-
-    Return a tuple of an AppConfig object and a Logger
-    &#34;&#34;&#34;
-    filepath = os.path.abspath(filepath)
-    if not os.path.isfile(filepath):
-        raise ConfigError(f&#34;Config file &#39;{filepath}&#39; does not exist&#34;)
-
-    with open(filepath) as f:
-        configuration = yaml.safe_load(f.read())
-
-    # Logging setup
-    if force_log_debug:
-        LOGGER.setLevel(logging.DEBUG)
-    elif (config_log_lvl := configuration[&#34;logging&#34;].get(&#34;level&#34;, None)) :
-        LOGGER.setLevel(config_log_lvl)
-
-    database_filepath = os.path.abspath(configuration[&#34;storage&#34;][&#34;database_filepath&#34;])
-    store_filepath = os.path.abspath(configuration[&#34;storage&#34;][&#34;store_filepath&#34;])
-    os.makedirs(store_filepath, exist_ok=True)
-    task_dict_filepath = os.path.abspath(configuration[&#34;storage&#34;][&#34;task_dict_filepath&#34;])
-    os.makedirs(os.path.dirname(database_filepath), exist_ok=True)
-    if not os.path.exists(task_dict_filepath):
-        raise ConfigError(f&#34;No tasks file at configured path {task_dict_filepath}&#34;)
-
-    user_id = configuration[&#34;matrix&#34;][&#34;user_id&#34;]
-    if not re.match(&#34;@.*:.*&#34;, user_id):
-        raise ConfigError(&#34;matrix.user_id must be in the form @name:domain&#34;)
-
-    # Retrieve the access credential. Prefer the access token if both are present.
-    user_password = configuration[&#34;matrix&#34;].get(&#34;user_password&#34;, None)
-    user_access_token = configuration[&#34;matrix&#34;].get(&#34;access_token&#34;, None)
-    if not user_password and not user_access_token:
-        raise ConfigError(&#34;Either user_password or access_token must be specified&#34;)
-
-    device_id = configuration[&#34;matrix&#34;][&#34;device_id&#34;]
-    device_name = configuration[&#34;matrix&#34;][&#34;device_name&#34;]
-    homeserver_url = configuration[&#34;matrix&#34;][&#34;homeserver_url&#34;]
-    trust_own_devices = configuration[&#34;matrix&#34;][&#34;trust_own_devices&#34;]
-    change_device_name = configuration[&#34;matrix&#34;][&#34;change_device_name&#34;]
-
-    command_prefix = configuration[&#34;bot&#34;][&#34;command_prefix&#34;]
-    trusted_users = configuration[&#34;bot&#34;].get(&#34;trusted_users&#34;, [])
-
-    commands = CommandList.from_yaml_obj(configuration.get(&#34;commands&#34;, {}))
-    for cmdname, cmd in BUILTIN_COMMANDS.items():
-        if cmdname in commands.commands:
-            LOGGER.warning(
-                f&#34;A user-defined command &#39;{cmdname}&#39; conflicts with a built-in command of the same name. Overriding the user-defined command with the builtin.&#34;
-            )
-        commands.commands[cmdname] = cmd
-    responses = ResponseList.from_yaml_obj(configuration.get(&#34;responses&#34;, []))
-
-    appconfig = Configuration(
-        configuration=configuration,
-        config_filepath=filepath,
-        database_filepath=database_filepath,
-        store_filepath=store_filepath,
-        task_dict_filepath=task_dict_filepath,
-        user_id=user_id,
-        user_password=user_password,
-        user_access_token=user_access_token,
-        device_id=device_id,
-        device_name=device_name,
-        homeserver_url=homeserver_url,
-        trust_own_devices=trust_own_devices,
-        change_device_name=change_device_name,
-        command_prefix=command_prefix,
-        trusted_users=trusted_users,
-        commands=commands,
-        responses=responses,
-    )
-
-    return appconfig</code></pre>
+        return json.dumps(self._asdict())</code></pre>
 </details>
 </section>
 <section>
@@ -189,99 +98,6 @@ def parse_config(
 <section>
 </section>
 <section>
-<h2 class="section-title" id="header-functions">Functions</h2>
-<dl>
-<dt id="trappedbot.configuration.parse_config"><code class="name flex">
-<span>def <span class="ident">parse_config</span></span>(<span>filepath: str, force_log_debug: bool = False) ‑> <a title="trappedbot.configuration.Configuration" href="#trappedbot.configuration.Configuration">Configuration</a></span>
-</code></dt>
-<dd>
-<div class="desc"><p>Parse a config file</p>
-<p>Return a tuple of an AppConfig object and a Logger</p></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def parse_config(
-    filepath: str,
-    force_log_debug: bool = False,
-) -&gt; Configuration:
-    &#34;&#34;&#34;Parse a config file
-
-    Return a tuple of an AppConfig object and a Logger
-    &#34;&#34;&#34;
-    filepath = os.path.abspath(filepath)
-    if not os.path.isfile(filepath):
-        raise ConfigError(f&#34;Config file &#39;{filepath}&#39; does not exist&#34;)
-
-    with open(filepath) as f:
-        configuration = yaml.safe_load(f.read())
-
-    # Logging setup
-    if force_log_debug:
-        LOGGER.setLevel(logging.DEBUG)
-    elif (config_log_lvl := configuration[&#34;logging&#34;].get(&#34;level&#34;, None)) :
-        LOGGER.setLevel(config_log_lvl)
-
-    database_filepath = os.path.abspath(configuration[&#34;storage&#34;][&#34;database_filepath&#34;])
-    store_filepath = os.path.abspath(configuration[&#34;storage&#34;][&#34;store_filepath&#34;])
-    os.makedirs(store_filepath, exist_ok=True)
-    task_dict_filepath = os.path.abspath(configuration[&#34;storage&#34;][&#34;task_dict_filepath&#34;])
-    os.makedirs(os.path.dirname(database_filepath), exist_ok=True)
-    if not os.path.exists(task_dict_filepath):
-        raise ConfigError(f&#34;No tasks file at configured path {task_dict_filepath}&#34;)
-
-    user_id = configuration[&#34;matrix&#34;][&#34;user_id&#34;]
-    if not re.match(&#34;@.*:.*&#34;, user_id):
-        raise ConfigError(&#34;matrix.user_id must be in the form @name:domain&#34;)
-
-    # Retrieve the access credential. Prefer the access token if both are present.
-    user_password = configuration[&#34;matrix&#34;].get(&#34;user_password&#34;, None)
-    user_access_token = configuration[&#34;matrix&#34;].get(&#34;access_token&#34;, None)
-    if not user_password and not user_access_token:
-        raise ConfigError(&#34;Either user_password or access_token must be specified&#34;)
-
-    device_id = configuration[&#34;matrix&#34;][&#34;device_id&#34;]
-    device_name = configuration[&#34;matrix&#34;][&#34;device_name&#34;]
-    homeserver_url = configuration[&#34;matrix&#34;][&#34;homeserver_url&#34;]
-    trust_own_devices = configuration[&#34;matrix&#34;][&#34;trust_own_devices&#34;]
-    change_device_name = configuration[&#34;matrix&#34;][&#34;change_device_name&#34;]
-
-    command_prefix = configuration[&#34;bot&#34;][&#34;command_prefix&#34;]
-    trusted_users = configuration[&#34;bot&#34;].get(&#34;trusted_users&#34;, [])
-
-    commands = CommandList.from_yaml_obj(configuration.get(&#34;commands&#34;, {}))
-    for cmdname, cmd in BUILTIN_COMMANDS.items():
-        if cmdname in commands.commands:
-            LOGGER.warning(
-                f&#34;A user-defined command &#39;{cmdname}&#39; conflicts with a built-in command of the same name. Overriding the user-defined command with the builtin.&#34;
-            )
-        commands.commands[cmdname] = cmd
-    responses = ResponseList.from_yaml_obj(configuration.get(&#34;responses&#34;, []))
-
-    appconfig = Configuration(
-        configuration=configuration,
-        config_filepath=filepath,
-        database_filepath=database_filepath,
-        store_filepath=store_filepath,
-        task_dict_filepath=task_dict_filepath,
-        user_id=user_id,
-        user_password=user_password,
-        user_access_token=user_access_token,
-        device_id=device_id,
-        device_name=device_name,
-        homeserver_url=homeserver_url,
-        trust_own_devices=trust_own_devices,
-        change_device_name=change_device_name,
-        command_prefix=command_prefix,
-        trusted_users=trusted_users,
-        commands=commands,
-        responses=responses,
-    )
-
-    return appconfig</code></pre>
-</details>
-</dd>
-</dl>
 </section>
 <section>
 <h2 class="section-title" id="header-classes">Classes</h2>
@@ -319,7 +135,7 @@ def parse_config(
 </dd>
 <dt id="trappedbot.configuration.Configuration"><code class="flex name class">
 <span>class <span class="ident">Configuration</span></span>
-<span>(</span><span>configuration: Dict = {}, config_filepath: str = '', database_filepath: str = '', store_filepath: str = '', task_dict_filepath: str = '', user_id: str = '', user_password: str = '', user_access_token: str = '', device_id: str = '', device_name: str = '', homeserver_url: str = '', trust_own_devices: bool = False, change_device_name: bool = False, command_prefix: str = '', trusted_users: List[str] = [], commands: <a title="trappedbot.commands.command_list.CommandList" href="commands/command_list.html#trappedbot.commands.command_list.CommandList">CommandList</a> = &lt;trappedbot.commands.command_list.CommandList object&gt;, responses: <a title="trappedbot.responses.response_list.ResponseList" href="responses/response_list.html#trappedbot.responses.response_list.ResponseList">ResponseList</a> = &lt;trappedbot.responses.response_list.ResponseList object&gt;)</span>
+<span>(</span><span>configuration: Dict = {}, config_filepath: str = '', database_filepath: str = '', store_filepath: str = '', user_id: str = '', user_password: str = '', user_access_token: str = '', device_id: str = '', device_name: str = '', homeserver_url: str = '', trust_own_devices: bool = False, change_device_name: bool = False, command_prefix: str = '', trusted_users: List[str] = [], commands: Dict[str, ForwardRef('Command')] = {}, responses: List[ForwardRef('Response')] = [])</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Application configuration</p></div>
@@ -334,7 +150,6 @@ def parse_config(
     config_filepath: str = &#34;&#34;
     database_filepath: str = &#34;&#34;
     store_filepath: str = &#34;&#34;
-    task_dict_filepath: str = &#34;&#34;
     user_id: str = &#34;&#34;
     user_password: str = &#34;&#34;
     user_access_token: str = &#34;&#34;
@@ -345,8 +160,8 @@ def parse_config(
     change_device_name: bool = False
     command_prefix: str = &#34;&#34;
     trusted_users: typing.List[str] = []
-    commands: CommandList = CommandList({})
-    responses: ResponseList = ResponseList([])
+    commands: typing.Dict[str, &#34;Command&#34;] = {}
+    responses: typing.List[&#34;Response&#34;] = []
 
     def extension(self, section: str, setting: str):
         &#34;&#34;&#34;Retrieve an extension from the config
@@ -371,73 +186,69 @@ def parse_config(
 </ul>
 <h3>Instance variables</h3>
 <dl>
-<dt id="trappedbot.configuration.Configuration.change_device_name"><code class="name">var <span class="ident">change_device_name</span> : bool</code></dt>
-<dd>
-<div class="desc"><p>Alias for field number 12</p></div>
-</dd>
-<dt id="trappedbot.configuration.Configuration.command_prefix"><code class="name">var <span class="ident">command_prefix</span> : str</code></dt>
-<dd>
-<div class="desc"><p>Alias for field number 13</p></div>
-</dd>
-<dt id="trappedbot.configuration.Configuration.commands"><code class="name">var <span class="ident">commands</span> : <a title="trappedbot.commands.command_list.CommandList" href="commands/command_list.html#trappedbot.commands.command_list.CommandList">CommandList</a></code></dt>
-<dd>
-<div class="desc"><p>Alias for field number 15</p></div>
-</dd>
-<dt id="trappedbot.configuration.Configuration.config_filepath"><code class="name">var <span class="ident">config_filepath</span> : str</code></dt>
-<dd>
-<div class="desc"><p>Alias for field number 1</p></div>
-</dd>
-<dt id="trappedbot.configuration.Configuration.configuration"><code class="name">var <span class="ident">configuration</span> : Dict</code></dt>
-<dd>
-<div class="desc"><p>Alias for field number 0</p></div>
-</dd>
-<dt id="trappedbot.configuration.Configuration.database_filepath"><code class="name">var <span class="ident">database_filepath</span> : str</code></dt>
-<dd>
-<div class="desc"><p>Alias for field number 2</p></div>
-</dd>
-<dt id="trappedbot.configuration.Configuration.device_id"><code class="name">var <span class="ident">device_id</span> : str</code></dt>
-<dd>
-<div class="desc"><p>Alias for field number 8</p></div>
-</dd>
-<dt id="trappedbot.configuration.Configuration.device_name"><code class="name">var <span class="ident">device_name</span> : str</code></dt>
-<dd>
-<div class="desc"><p>Alias for field number 9</p></div>
-</dd>
-<dt id="trappedbot.configuration.Configuration.homeserver_url"><code class="name">var <span class="ident">homeserver_url</span> : str</code></dt>
-<dd>
-<div class="desc"><p>Alias for field number 10</p></div>
-</dd>
-<dt id="trappedbot.configuration.Configuration.responses"><code class="name">var <span class="ident">responses</span> : <a title="trappedbot.responses.response_list.ResponseList" href="responses/response_list.html#trappedbot.responses.response_list.ResponseList">ResponseList</a></code></dt>
-<dd>
-<div class="desc"><p>Alias for field number 16</p></div>
-</dd>
-<dt id="trappedbot.configuration.Configuration.store_filepath"><code class="name">var <span class="ident">store_filepath</span> : str</code></dt>
-<dd>
-<div class="desc"><p>Alias for field number 3</p></div>
-</dd>
-<dt id="trappedbot.configuration.Configuration.task_dict_filepath"><code class="name">var <span class="ident">task_dict_filepath</span> : str</code></dt>
-<dd>
-<div class="desc"><p>Alias for field number 4</p></div>
-</dd>
-<dt id="trappedbot.configuration.Configuration.trust_own_devices"><code class="name">var <span class="ident">trust_own_devices</span> : bool</code></dt>
+<dt id="trappedbot.configuration.Configuration.change_device_name"><code class="name">var <span class="ident">change_device_name</span></code></dt>
 <dd>
 <div class="desc"><p>Alias for field number 11</p></div>
 </dd>
-<dt id="trappedbot.configuration.Configuration.trusted_users"><code class="name">var <span class="ident">trusted_users</span> : List[str]</code></dt>
+<dt id="trappedbot.configuration.Configuration.command_prefix"><code class="name">var <span class="ident">command_prefix</span></code></dt>
+<dd>
+<div class="desc"><p>Alias for field number 12</p></div>
+</dd>
+<dt id="trappedbot.configuration.Configuration.commands"><code class="name">var <span class="ident">commands</span></code></dt>
 <dd>
 <div class="desc"><p>Alias for field number 14</p></div>
 </dd>
-<dt id="trappedbot.configuration.Configuration.user_access_token"><code class="name">var <span class="ident">user_access_token</span> : str</code></dt>
+<dt id="trappedbot.configuration.Configuration.config_filepath"><code class="name">var <span class="ident">config_filepath</span></code></dt>
+<dd>
+<div class="desc"><p>Alias for field number 1</p></div>
+</dd>
+<dt id="trappedbot.configuration.Configuration.configuration"><code class="name">var <span class="ident">configuration</span></code></dt>
+<dd>
+<div class="desc"><p>Alias for field number 0</p></div>
+</dd>
+<dt id="trappedbot.configuration.Configuration.database_filepath"><code class="name">var <span class="ident">database_filepath</span></code></dt>
+<dd>
+<div class="desc"><p>Alias for field number 2</p></div>
+</dd>
+<dt id="trappedbot.configuration.Configuration.device_id"><code class="name">var <span class="ident">device_id</span></code></dt>
 <dd>
 <div class="desc"><p>Alias for field number 7</p></div>
 </dd>
-<dt id="trappedbot.configuration.Configuration.user_id"><code class="name">var <span class="ident">user_id</span> : str</code></dt>
+<dt id="trappedbot.configuration.Configuration.device_name"><code class="name">var <span class="ident">device_name</span></code></dt>
 <dd>
-<div class="desc"><p>Alias for field number 5</p></div>
+<div class="desc"><p>Alias for field number 8</p></div>
 </dd>
-<dt id="trappedbot.configuration.Configuration.user_password"><code class="name">var <span class="ident">user_password</span> : str</code></dt>
+<dt id="trappedbot.configuration.Configuration.homeserver_url"><code class="name">var <span class="ident">homeserver_url</span></code></dt>
+<dd>
+<div class="desc"><p>Alias for field number 9</p></div>
+</dd>
+<dt id="trappedbot.configuration.Configuration.responses"><code class="name">var <span class="ident">responses</span></code></dt>
+<dd>
+<div class="desc"><p>Alias for field number 15</p></div>
+</dd>
+<dt id="trappedbot.configuration.Configuration.store_filepath"><code class="name">var <span class="ident">store_filepath</span></code></dt>
+<dd>
+<div class="desc"><p>Alias for field number 3</p></div>
+</dd>
+<dt id="trappedbot.configuration.Configuration.trust_own_devices"><code class="name">var <span class="ident">trust_own_devices</span></code></dt>
+<dd>
+<div class="desc"><p>Alias for field number 10</p></div>
+</dd>
+<dt id="trappedbot.configuration.Configuration.trusted_users"><code class="name">var <span class="ident">trusted_users</span></code></dt>
+<dd>
+<div class="desc"><p>Alias for field number 13</p></div>
+</dd>
+<dt id="trappedbot.configuration.Configuration.user_access_token"><code class="name">var <span class="ident">user_access_token</span></code></dt>
 <dd>
 <div class="desc"><p>Alias for field number 6</p></div>
+</dd>
+<dt id="trappedbot.configuration.Configuration.user_id"><code class="name">var <span class="ident">user_id</span></code></dt>
+<dd>
+<div class="desc"><p>Alias for field number 4</p></div>
+</dd>
+<dt id="trappedbot.configuration.Configuration.user_password"><code class="name">var <span class="ident">user_password</span></code></dt>
+<dd>
+<div class="desc"><p>Alias for field number 5</p></div>
 </dd>
 </dl>
 <h3>Methods</h3>
@@ -483,11 +294,6 @@ def parse_config(
 <li><code><a title="trappedbot" href="index.html">trappedbot</a></code></li>
 </ul>
 </li>
-<li><h3><a href="#header-functions">Functions</a></h3>
-<ul class="">
-<li><code><a title="trappedbot.configuration.parse_config" href="#trappedbot.configuration.parse_config">parse_config</a></code></li>
-</ul>
-</li>
 <li><h3><a href="#header-classes">Classes</a></h3>
 <ul>
 <li>
@@ -508,7 +314,6 @@ def parse_config(
 <li><code><a title="trappedbot.configuration.Configuration.homeserver_url" href="#trappedbot.configuration.Configuration.homeserver_url">homeserver_url</a></code></li>
 <li><code><a title="trappedbot.configuration.Configuration.responses" href="#trappedbot.configuration.Configuration.responses">responses</a></code></li>
 <li><code><a title="trappedbot.configuration.Configuration.store_filepath" href="#trappedbot.configuration.Configuration.store_filepath">store_filepath</a></code></li>
-<li><code><a title="trappedbot.configuration.Configuration.task_dict_filepath" href="#trappedbot.configuration.Configuration.task_dict_filepath">task_dict_filepath</a></code></li>
 <li><code><a title="trappedbot.configuration.Configuration.trust_own_devices" href="#trappedbot.configuration.Configuration.trust_own_devices">trust_own_devices</a></code></li>
 <li><code><a title="trappedbot.configuration.Configuration.trusted_users" href="#trappedbot.configuration.Configuration.trusted_users">trusted_users</a></code></li>
 <li><code><a title="trappedbot.configuration.Configuration.user_access_token" href="#trappedbot.configuration.Configuration.user_access_token">user_access_token</a></code></li>

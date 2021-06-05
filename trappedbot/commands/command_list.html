@@ -32,7 +32,6 @@
 
 import typing
 
-import trappedbot
 from trappedbot.applogger import LOGGER
 from trappedbot.commands.command import Command
 from trappedbot.tasks.builtin import BUILTIN_TASKS
@@ -44,8 +43,8 @@ def yamlobj2command(
     name: str,
     yamlobj: typing.Dict,
 ) -&gt; typing.Optional[Command]:
-    if yamlobj.get(&#34;builtin&#34;):
-        taskfunc = BUILTIN_TASKS[name].taskfunc
+    if (builtin_name := yamlobj.get(&#34;builtin&#34;)) :
+        taskfunc = BUILTIN_TASKS[builtin_name].taskfunc
     elif (cmd := yamlobj.get(&#34;systemcmd&#34;)) :
         taskfunc = systemcmd2taskfunc(cmd)
     elif (modpath := yamlobj.get(&#34;modulepath&#34;)) :
@@ -66,23 +65,20 @@ def yamlobj2command(
             taskfunc,
             split=yamlobj.get(&#34;split&#34;),
         ),
+        help=yamlobj.get(&#34;help&#34;, None),
+        allow_untrusted=yamlobj.get(&#34;allow_untrusted&#34;, False),
+        allow_homeservers=yamlobj.get(&#34;allow_homeservers&#34;, []),
+        allow_users=yamlobj.get(&#34;allow_users&#34;, []),
     )
 
 
-class CommandList:
-    &#34;&#34;&#34;A list of commands that our bot can perform&#34;&#34;&#34;
-
-    def __init__(self, commands: typing.Dict[str, Command]):
-        self.commands = commands
-
-    @classmethod
-    def from_yaml_obj(cls, commands_yaml_obj: typing.Any):
-        &#34;&#34;&#34;Return a CommandList from a YAML object&#34;&#34;&#34;
-        commands: typing.Dict[str, Command] = {}
-        for cname, cdefn in commands_yaml_obj.items():
-            if (command := yamlobj2command(cname, cdefn)) :
-                commands[cname] = command
-        return cls(commands)</code></pre>
+def yamlobj2cmddict(commands_yaml_obj: typing.Any) -&gt; typing.Dict[str, Command]:
+    &#34;&#34;&#34;Return a CommandList from a YAML object&#34;&#34;&#34;
+    commands: typing.Dict[str, Command] = {}
+    for cname, cdefn in commands_yaml_obj.items():
+        if (command := yamlobj2command(cname, cdefn)) :
+            commands[cname] = command
+    return commands</code></pre>
 </details>
 </section>
 <section>
@@ -92,6 +88,24 @@ class CommandList:
 <section>
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
+<dt id="trappedbot.commands.command_list.yamlobj2cmddict"><code class="name flex">
+<span>def <span class="ident">yamlobj2cmddict</span></span>(<span>commands_yaml_obj: Any) ‑> Dict[str, <a title="trappedbot.commands.command.Command" href="command.html#trappedbot.commands.command.Command">Command</a>]</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Return a CommandList from a YAML object</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def yamlobj2cmddict(commands_yaml_obj: typing.Any) -&gt; typing.Dict[str, Command]:
+    &#34;&#34;&#34;Return a CommandList from a YAML object&#34;&#34;&#34;
+    commands: typing.Dict[str, Command] = {}
+    for cname, cdefn in commands_yaml_obj.items():
+        if (command := yamlobj2command(cname, cdefn)) :
+            commands[cname] = command
+    return commands</code></pre>
+</details>
+</dd>
 <dt id="trappedbot.commands.command_list.yamlobj2command"><code class="name flex">
 <span>def <span class="ident">yamlobj2command</span></span>(<span>name: str, yamlobj: Dict) ‑> Union[<a title="trappedbot.commands.command.Command" href="command.html#trappedbot.commands.command.Command">Command</a>, NoneType]</span>
 </code></dt>
@@ -105,8 +119,8 @@ class CommandList:
     name: str,
     yamlobj: typing.Dict,
 ) -&gt; typing.Optional[Command]:
-    if yamlobj.get(&#34;builtin&#34;):
-        taskfunc = BUILTIN_TASKS[name].taskfunc
+    if (builtin_name := yamlobj.get(&#34;builtin&#34;)) :
+        taskfunc = BUILTIN_TASKS[builtin_name].taskfunc
     elif (cmd := yamlobj.get(&#34;systemcmd&#34;)) :
         taskfunc = systemcmd2taskfunc(cmd)
     elif (modpath := yamlobj.get(&#34;modulepath&#34;)) :
@@ -127,63 +141,16 @@ class CommandList:
             taskfunc,
             split=yamlobj.get(&#34;split&#34;),
         ),
+        help=yamlobj.get(&#34;help&#34;, None),
+        allow_untrusted=yamlobj.get(&#34;allow_untrusted&#34;, False),
+        allow_homeservers=yamlobj.get(&#34;allow_homeservers&#34;, []),
+        allow_users=yamlobj.get(&#34;allow_users&#34;, []),
     )</code></pre>
 </details>
 </dd>
 </dl>
 </section>
 <section>
-<h2 class="section-title" id="header-classes">Classes</h2>
-<dl>
-<dt id="trappedbot.commands.command_list.CommandList"><code class="flex name class">
-<span>class <span class="ident">CommandList</span></span>
-<span>(</span><span>commands: Dict[str, <a title="trappedbot.commands.command.Command" href="command.html#trappedbot.commands.command.Command">Command</a>])</span>
-</code></dt>
-<dd>
-<div class="desc"><p>A list of commands that our bot can perform</p></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">class CommandList:
-    &#34;&#34;&#34;A list of commands that our bot can perform&#34;&#34;&#34;
-
-    def __init__(self, commands: typing.Dict[str, Command]):
-        self.commands = commands
-
-    @classmethod
-    def from_yaml_obj(cls, commands_yaml_obj: typing.Any):
-        &#34;&#34;&#34;Return a CommandList from a YAML object&#34;&#34;&#34;
-        commands: typing.Dict[str, Command] = {}
-        for cname, cdefn in commands_yaml_obj.items():
-            if (command := yamlobj2command(cname, cdefn)) :
-                commands[cname] = command
-        return cls(commands)</code></pre>
-</details>
-<h3>Static methods</h3>
-<dl>
-<dt id="trappedbot.commands.command_list.CommandList.from_yaml_obj"><code class="name flex">
-<span>def <span class="ident">from_yaml_obj</span></span>(<span>commands_yaml_obj: Any)</span>
-</code></dt>
-<dd>
-<div class="desc"><p>Return a CommandList from a YAML object</p></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@classmethod
-def from_yaml_obj(cls, commands_yaml_obj: typing.Any):
-    &#34;&#34;&#34;Return a CommandList from a YAML object&#34;&#34;&#34;
-    commands: typing.Dict[str, Command] = {}
-    for cname, cdefn in commands_yaml_obj.items():
-        if (command := yamlobj2command(cname, cdefn)) :
-            commands[cname] = command
-    return cls(commands)</code></pre>
-</details>
-</dd>
-</dl>
-</dd>
-</dl>
 </section>
 </article>
 <nav id="sidebar">
@@ -199,17 +166,8 @@ def from_yaml_obj(cls, commands_yaml_obj: typing.Any):
 </li>
 <li><h3><a href="#header-functions">Functions</a></h3>
 <ul class="">
+<li><code><a title="trappedbot.commands.command_list.yamlobj2cmddict" href="#trappedbot.commands.command_list.yamlobj2cmddict">yamlobj2cmddict</a></code></li>
 <li><code><a title="trappedbot.commands.command_list.yamlobj2command" href="#trappedbot.commands.command_list.yamlobj2command">yamlobj2command</a></code></li>
-</ul>
-</li>
-<li><h3><a href="#header-classes">Classes</a></h3>
-<ul>
-<li>
-<h4><code><a title="trappedbot.commands.command_list.CommandList" href="#trappedbot.commands.command_list.CommandList">CommandList</a></code></h4>
-<ul class="">
-<li><code><a title="trappedbot.commands.command_list.CommandList.from_yaml_obj" href="#trappedbot.commands.command_list.CommandList.from_yaml_obj">from_yaml_obj</a></code></li>
-</ul>
-</li>
 </ul>
 </li>
 </ul>

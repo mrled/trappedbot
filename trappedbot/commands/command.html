@@ -39,7 +39,7 @@ example commands.
 
 import shlex
 import traceback
-from typing import List, NamedTuple, Optional
+from typing import List, Optional
 
 from nio import AsyncClient
 from nio.events.room_events import RoomMessageText
@@ -52,7 +52,7 @@ from trappedbot.chat_functions import send_text_to_room
 from trappedbot.tasks.task import Task, TaskMessageContext
 
 
-class Command(NamedTuple):
+class Command(object):
     &#34;&#34;&#34;A command that a bot can perform
 
     name: The word that activates this command
@@ -63,12 +63,23 @@ class Command(NamedTuple):
     allow_users: Allow any user in this list to run this command?
     &#34;&#34;&#34;
 
-    name: str
-    task: Task
-    help: str = &#34;No help available for this command&#34;
-    allow_untrusted: bool = False
-    allow_homeservers: Optional[List[str]] = None
-    allow_users: Optional[List[str]] = None
+    def __init__(
+        self,
+        name: str,
+        task: Task,
+        # This isn&#39;t a NamedTuple because I want to be able to pass help=None
+        # and have it use fallback text. Sigh.
+        help: Optional[str] = None,
+        allow_untrusted: bool = False,
+        allow_homeservers: Optional[List[str]] = None,
+        allow_users: Optional[List[str]] = None,
+    ):
+        self.name = name
+        self.task = task
+        self.help = help or &#34;No help available for this command&#34;
+        self.allow_untrusted = allow_untrusted
+        self.allow_homeservers = allow_homeservers or []
+        self.allow_users = allow_users or []
 
 
 async def process_command(
@@ -89,7 +100,7 @@ async def process_command(
 
     LOGGER.debug(f&#34;commands :: Command.process: {input} {room}&#34;)
 
-    command = config.commands.commands.get(cmdname)
+    command = config.commands.get(cmdname)
     if not command:
         await send_text_to_room(
             client,
@@ -190,7 +201,7 @@ async def process_command(
 
     LOGGER.debug(f&#34;commands :: Command.process: {input} {room}&#34;)
 
-    command = config.commands.commands.get(cmdname)
+    command = config.commands.get(cmdname)
     if not command:
         await send_text_to_room(
             client,
@@ -264,7 +275,7 @@ async def process_command(
 <dl>
 <dt id="trappedbot.commands.command.Command"><code class="flex name class">
 <span>class <span class="ident">Command</span></span>
-<span>(</span><span>name: str, task: <a title="trappedbot.tasks.task.Task" href="../tasks/task.html#trappedbot.tasks.task.Task">Task</a>, help: str = 'No help available for this command', allow_untrusted: bool = False, allow_homeservers: Union[List[str], NoneType] = None, allow_users: Union[List[str], NoneType] = None)</span>
+<span>(</span><span>name: str, task: <a title="trappedbot.tasks.task.Task" href="../tasks/task.html#trappedbot.tasks.task.Task">Task</a>, help: Union[str, NoneType] = None, allow_untrusted: bool = False, allow_homeservers: Union[List[str], NoneType] = None, allow_users: Union[List[str], NoneType] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>A command that a bot can perform</p>
@@ -278,7 +289,7 @@ allow_users: Allow any user in this list to run this command?</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class Command(NamedTuple):
+<pre><code class="python">class Command(object):
     &#34;&#34;&#34;A command that a bot can perform
 
     name: The word that activates this command
@@ -289,44 +300,24 @@ allow_users: Allow any user in this list to run this command?</p></div>
     allow_users: Allow any user in this list to run this command?
     &#34;&#34;&#34;
 
-    name: str
-    task: Task
-    help: str = &#34;No help available for this command&#34;
-    allow_untrusted: bool = False
-    allow_homeservers: Optional[List[str]] = None
-    allow_users: Optional[List[str]] = None</code></pre>
+    def __init__(
+        self,
+        name: str,
+        task: Task,
+        # This isn&#39;t a NamedTuple because I want to be able to pass help=None
+        # and have it use fallback text. Sigh.
+        help: Optional[str] = None,
+        allow_untrusted: bool = False,
+        allow_homeservers: Optional[List[str]] = None,
+        allow_users: Optional[List[str]] = None,
+    ):
+        self.name = name
+        self.task = task
+        self.help = help or &#34;No help available for this command&#34;
+        self.allow_untrusted = allow_untrusted
+        self.allow_homeservers = allow_homeservers or []
+        self.allow_users = allow_users or []</code></pre>
 </details>
-<h3>Ancestors</h3>
-<ul class="hlist">
-<li>builtins.tuple</li>
-</ul>
-<h3>Instance variables</h3>
-<dl>
-<dt id="trappedbot.commands.command.Command.allow_homeservers"><code class="name">var <span class="ident">allow_homeservers</span> : Union[List[str], NoneType]</code></dt>
-<dd>
-<div class="desc"><p>Alias for field number 4</p></div>
-</dd>
-<dt id="trappedbot.commands.command.Command.allow_untrusted"><code class="name">var <span class="ident">allow_untrusted</span> : bool</code></dt>
-<dd>
-<div class="desc"><p>Alias for field number 3</p></div>
-</dd>
-<dt id="trappedbot.commands.command.Command.allow_users"><code class="name">var <span class="ident">allow_users</span> : Union[List[str], NoneType]</code></dt>
-<dd>
-<div class="desc"><p>Alias for field number 5</p></div>
-</dd>
-<dt id="trappedbot.commands.command.Command.help"><code class="name">var <span class="ident">help</span> : str</code></dt>
-<dd>
-<div class="desc"><p>Alias for field number 2</p></div>
-</dd>
-<dt id="trappedbot.commands.command.Command.name"><code class="name">var <span class="ident">name</span> : str</code></dt>
-<dd>
-<div class="desc"><p>Alias for field number 0</p></div>
-</dd>
-<dt id="trappedbot.commands.command.Command.task"><code class="name">var <span class="ident">task</span> : <a title="trappedbot.tasks.task.Task" href="../tasks/task.html#trappedbot.tasks.task.Task">Task</a></code></dt>
-<dd>
-<div class="desc"><p>Alias for field number 1</p></div>
-</dd>
-</dl>
 </dd>
 </dl>
 </section>
@@ -351,14 +342,6 @@ allow_users: Allow any user in this list to run this command?</p></div>
 <ul>
 <li>
 <h4><code><a title="trappedbot.commands.command.Command" href="#trappedbot.commands.command.Command">Command</a></code></h4>
-<ul class="two-column">
-<li><code><a title="trappedbot.commands.command.Command.allow_homeservers" href="#trappedbot.commands.command.Command.allow_homeservers">allow_homeservers</a></code></li>
-<li><code><a title="trappedbot.commands.command.Command.allow_untrusted" href="#trappedbot.commands.command.Command.allow_untrusted">allow_untrusted</a></code></li>
-<li><code><a title="trappedbot.commands.command.Command.allow_users" href="#trappedbot.commands.command.Command.allow_users">allow_users</a></code></li>
-<li><code><a title="trappedbot.commands.command.Command.help" href="#trappedbot.commands.command.Command.help">help</a></code></li>
-<li><code><a title="trappedbot.commands.command.Command.name" href="#trappedbot.commands.command.Command.name">name</a></code></li>
-<li><code><a title="trappedbot.commands.command.Command.task" href="#trappedbot.commands.command.Command.task">task</a></code></li>
-</ul>
 </li>
 </ul>
 </li>

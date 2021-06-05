@@ -7,7 +7,7 @@ example commands.
 
 import shlex
 import traceback
-from typing import List, NamedTuple, Optional
+from typing import List, Optional
 
 from nio import AsyncClient
 from nio.events.room_events import RoomMessageText
@@ -20,7 +20,7 @@ from trappedbot.chat_functions import send_text_to_room
 from trappedbot.tasks.task import Task, TaskMessageContext
 
 
-class Command(NamedTuple):
+class Command(object):
     """A command that a bot can perform
 
     name: The word that activates this command
@@ -31,12 +31,23 @@ class Command(NamedTuple):
     allow_users: Allow any user in this list to run this command?
     """
 
-    name: str
-    task: Task
-    help: str = "No help available for this command"
-    allow_untrusted: bool = False
-    allow_homeservers: Optional[List[str]] = None
-    allow_users: Optional[List[str]] = None
+    def __init__(
+        self,
+        name: str,
+        task: Task,
+        # This isn't a NamedTuple because I want to be able to pass help=None
+        # and have it use fallback text. Sigh.
+        help: Optional[str] = None,
+        allow_untrusted: bool = False,
+        allow_homeservers: Optional[List[str]] = None,
+        allow_users: Optional[List[str]] = None,
+    ):
+        self.name = name
+        self.task = task
+        self.help = help or "No help available for this command"
+        self.allow_untrusted = allow_untrusted
+        self.allow_homeservers = allow_homeservers or []
+        self.allow_users = allow_users or []
 
 
 async def process_command(

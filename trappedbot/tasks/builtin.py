@@ -65,7 +65,7 @@ def builtin_task_help(
         if topic == "commands":
             outlines = []
             for cname, cmd in config.commands.commands.items():
-                outlines.append(f"- {cname}: {cmd.help}")
+                outlines.append(f"- `{cname}`: {cmd.help}")
             output = "\n".join(outlines)
             format = MessageFormat.MARKDOWN
         elif (command := config.commands.commands.get(topic)) :

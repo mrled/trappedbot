@@ -3,7 +3,6 @@
 
 import typing
 
-import trappedbot
 from trappedbot.applogger import LOGGER
 from trappedbot.commands.command import Command
 from trappedbot.tasks.builtin import BUILTIN_TASKS
@@ -37,6 +36,10 @@ def yamlobj2command(
             taskfunc,
             split=yamlobj.get("split"),
         ),
+        help=yamlobj.get("help", None),
+        allow_untrusted=yamlobj.get("allow_untrusted", False),
+        allow_homeservers=yamlobj.get("allow_homeservers", []),
+        allow_users=yamlobj.get("allow_users", []),
     )
 
 

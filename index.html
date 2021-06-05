@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
 <meta name="generator" content="pdoc 0.9.2" />
 <title>trappedbot API documentation</title>
-<meta name="description" content="Trapped in a Matrix server, send help!" />
+<meta name="description" content="Trapped in a Matrix server, send help! …" />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
 <link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/github.min.css" crossorigin>
@@ -23,11 +23,136 @@
 </header>
 <section id="section-intro">
 <p>Trapped in a Matrix server, send help!</p>
+<p>This is the implementation of a tiny daemon (in the spiritual, but also computer, sense) which we can trap inside our Matrix servers to perform tasks for us.</p>
+<ul>
+<li>Project page: <a href="https://github.com/mrled/trappedbot">https://github.com/mrled/trappedbot</a></li>
+<li>Online documentation: <a href="https://pages.micahrl.com/trappedbot">https://pages.micahrl.com/trappedbot</a></li>
+</ul>
+<p>trappedbot can be configured to do a few things:</p>
+<ul>
+<li>
+<p>Listen for a command prefix, receive a command, and run a task. For instance:</p>
+<pre><code>@you:example.com |   !trappedbot version
+@bot:example.com |   Trapped in a Matrix server, send help! Version 0.9.0
+</code></pre>
+</li>
+<li>
+<p>Listen for phrases to be used in chat, and respond to them, without a command prefix. For instance:</p>
+<pre><code>@you:example.com |   im hungry
+@bot:example.com |   Replying to @you:example.com:
+                     &gt; im hungry
+                     Hi hungry, I'm dad!
+</code></pre>
+</li>
+</ul>
+<p>As you can see, these are the type of features it is vital to have in a channel of importance or prestige.</p>
+<h2 id="configuring-trappedbot">Configuring trappedbot</h2>
+<p>See the configuration file example on GitHub: <a href="https://github.com/mrled/trappedbot/blob/master/trappedbot.config.yml">https://github.com/mrled/trappedbot/blob/master/trappedbot.config.yml</a></p>
+<h2 id="extending-trappedbot">Extending trappedbot</h2>
+<p>You can write Python modules that extend trappedbot. See the <code><a title="trappedbot.extensions" href="extensions/index.html">trappedbot.extensions</a></code> module.</p>
+<h2 id="running-the-trappedbot-command">Running the trappedbot command</h2>
+<p>The bot has a few useful subcommands that you can access via the built-in help:</p>
+<pre><code>&gt; trappedbot --help
+usage: trappedbot [-h] [--debug] [--verbose] {version,bot,builtin-tasks,access-token} ...
+
+Trapped in a Matrix server, send help!
+
+positional arguments:
+{version,bot,builtin-tasks,access-token}
+    version             Show version
+    bot                 Start the bot
+    builtin-tasks       List built in tasks
+    access-token        Get an access token from a Matrix server
+
+optional arguments:
+-h, --help            show this help message and exit
+--debug, -d           Include verbose/debug messages, and enter the debugger on unhandled exceptions
+--verbose, -v         Include verbose/debug messages
+</code></pre>
+<h2 id="running-the-bot-in-production">Running the bot in production</h2>
+<p>While simply running <code>trappedbot bot /path/to/config.yml</code> will start the bot, it is recommended that you run it as a service on your operating system. If your system is a Linux system that runs systemd, you may wish to write a systemd service definition file.</p>
+<ul>
+<li>Example systemd service definition file: <a href="https://github.com/mrled/trappedbot/blob/master/support/trappedbot.service">https://github.com/mrled/trappedbot/blob/master/support/trappedbot.service</a></li>
+</ul>
+<p>Once you customize that file for your use case, you might install it like so:</p>
+<ul>
+<li>Copy it to somewhere like <code>/etc/systemd/system/trappedbot.service</code></li>
+<li>Reload the systemd daemon with <code>sudo systemctl daemon-reload</code></li>
+<li>Start the bot with <code>sudo systemctl start <a title="trappedbot" href="#trappedbot">trappedbot</a></code></li>
+<li>Automatically run it every time your host boots with <code>sudo systemctl enable <a title="trappedbot" href="#trappedbot">trappedbot</a></code></li>
+<li>View the logs with <code>sudo journalctl -fu trappedbot</code></li>
+</ul>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">&#34;&#34;&#34;Trapped in a Matrix server, send help!&#34;&#34;&#34;</code></pre>
+<pre><code class="python">&#34;&#34;&#34;Trapped in a Matrix server, send help!
+
+This is the implementation of a tiny daemon (in the spiritual, but also computer, sense) which we can trap inside our Matrix servers to perform tasks for us.
+
+* Project page: &lt;https://github.com/mrled/trappedbot&gt;
+* Online documentation: &lt;https://pages.micahrl.com/trappedbot&gt;
+
+trappedbot can be configured to do a few things:
+
+* Listen for a command prefix, receive a command, and run a task. For instance:
+
+        @you:example.com |   !trappedbot version
+        @bot:example.com |   Trapped in a Matrix server, send help! Version 0.9.0
+
+* Listen for phrases to be used in chat, and respond to them, without a command prefix. For instance:
+
+        @you:example.com |   im hungry
+        @bot:example.com |   Replying to @you:example.com:
+                             &gt; im hungry
+                             Hi hungry, I&#39;m dad!
+
+As you can see, these are the type of features it is vital to have in a channel of importance or prestige.
+
+## Configuring trappedbot
+
+See the configuration file example on GitHub: &lt;https://github.com/mrled/trappedbot/blob/master/trappedbot.config.yml&gt;
+
+## Extending trappedbot
+
+You can write Python modules that extend trappedbot. See the `trappedbot.extensions` module.
+
+## Running the trappedbot command
+
+The bot has a few useful subcommands that you can access via the built-in help:
+
+    &gt; trappedbot --help
+    usage: trappedbot [-h] [--debug] [--verbose] {version,bot,builtin-tasks,access-token} ...
+
+    Trapped in a Matrix server, send help!
+
+    positional arguments:
+    {version,bot,builtin-tasks,access-token}
+        version             Show version
+        bot                 Start the bot
+        builtin-tasks       List built in tasks
+        access-token        Get an access token from a Matrix server
+
+    optional arguments:
+    -h, --help            show this help message and exit
+    --debug, -d           Include verbose/debug messages, and enter the debugger on unhandled exceptions
+    --verbose, -v         Include verbose/debug messages
+
+## Running the bot in production
+
+While simply running `trappedbot bot /path/to/config.yml` will start the bot, it is recommended that you run it as a service on your operating system. If your system is a Linux system that runs systemd, you may wish to write a systemd service definition file.
+
+* Example systemd service definition file: &lt;https://github.com/mrled/trappedbot/blob/master/support/trappedbot.service&gt;
+
+Once you customize that file for your use case, you might install it like so:
+
+* Copy it to somewhere like `/etc/systemd/system/trappedbot.service`
+* Reload the systemd daemon with `sudo systemctl daemon-reload`
+* Start the bot with `sudo systemctl start trappedbot`
+* Automatically run it every time your host boots with `sudo systemctl enable trappedbot`
+* View the logs with `sudo journalctl -fu trappedbot`
+
+&#34;&#34;&#34;</code></pre>
 </details>
 </section>
 <section>
@@ -113,7 +238,12 @@
 <nav id="sidebar">
 <h1>Index</h1>
 <div class="toc">
-<ul></ul>
+<ul>
+<li><a href="#configuring-trappedbot">Configuring trappedbot</a></li>
+<li><a href="#extending-trappedbot">Extending trappedbot</a></li>
+<li><a href="#running-the-trappedbot-command">Running the trappedbot command</a></li>
+<li><a href="#running-the-bot-in-production">Running the bot in production</a></li>
+</ul>
 </div>
 <ul id="index">
 <li><h3><a href="#header-submodules">Sub-modules</a></h3>

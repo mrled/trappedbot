@@ -27,7 +27,6 @@ class Configuration(typing.NamedTuple):
     config_filepath: str = ""
     database_filepath: str = ""
     store_filepath: str = ""
-    task_dict_filepath: str = ""
     user_id: str = ""
     user_password: str = ""
     user_access_token: str = ""
@@ -95,10 +94,7 @@ def parse_config(
     database_filepath = os.path.abspath(configuration["storage"]["database_filepath"])
     store_filepath = os.path.abspath(configuration["storage"]["store_filepath"])
     os.makedirs(store_filepath, exist_ok=True)
-    task_dict_filepath = os.path.abspath(configuration["storage"]["task_dict_filepath"])
     os.makedirs(os.path.dirname(database_filepath), exist_ok=True)
-    if not os.path.exists(task_dict_filepath):
-        raise ConfigError(f"No tasks file at configured path {task_dict_filepath}")
 
     user_id = configuration["matrix"]["user_id"]
     if not re.match("@.*:.*", user_id):
@@ -133,7 +129,6 @@ def parse_config(
         config_filepath=filepath,
         database_filepath=database_filepath,
         store_filepath=store_filepath,
-        task_dict_filepath=task_dict_filepath,
         user_id=user_id,
         user_password=user_password,
         user_access_token=user_access_token,

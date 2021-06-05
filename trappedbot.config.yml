@@ -43,8 +43,6 @@ storage:
   database_filepath: "/path/to/trappedbot/bot.db"
   # Where to find the bot local storage?
   store_filepath: "/path/to/trappedbot/store"
-  # The location of the tasks dict
-  task_dict_filepath: "/path/to/trappedbot/tasks.yml"
 
 logging:
   # Possible values are (in order of least to most verbose):

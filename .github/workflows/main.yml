@@ -2,7 +2,7 @@
 
 name: pdoc-gh-pages-generate
 
-# Controls when the action will run. 
+# Controls when the action will run.
 on:
   # Triggers the workflow on push or pull request events but only for the master branch
   push:
@@ -36,10 +36,10 @@ jobs:
 
       - name: Generate documentation
         run: pdoc --html trappedbot
-        
+
       - name: Deploy
         uses: peaceiris/actions-gh-pages@v3
         with:
           deploy_key: ${{ secrets.ACTIONS_DEPLOY_KEY }}
-          publish_dir: ./html
+          publish_dir: ./html/trappedbot
           publish_branch: gh-pages

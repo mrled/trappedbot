@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
 <meta name="generator" content="pdoc 0.9.2" />
 <title>trappedbot.callbacks API documentation</title>
-<meta name="description" content="Implement callbacks for: …" />
+<meta name="description" content="Callbacks to give to the `nio.AsyncClient` …" />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
 <link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/github.min.css" crossorigin>
@@ -22,21 +22,19 @@
 <h1 class="title">Module <code>trappedbot.callbacks</code></h1>
 </header>
 <section id="section-intro">
-<p>Implement callbacks for:</p>
-<ul>
-<li>receiving a text message</li>
-<li>receiving an invite</li>
-<li>performing an emoji verification (bot must run in forground as keyboard input is required)</li>
-</ul>
+<p>Callbacks to give to the <code>nio.AsyncClient</code>.</p>
+<p><code>nio</code> uses callbacks to do work on Matrix events.
+<code><a title="trappedbot.botclient.botloop" href="botclient.html#trappedbot.botclient.botloop">botloop()</a></code> sets callback funtions defined here on the
+<code>nio.AsyncClient</code> object it uses.</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">&#34;&#34;&#34;Implement callbacks for:
+<pre><code class="python">&#34;&#34;&#34;Callbacks to give to the `nio.AsyncClient`.
 
-- receiving a text message
-- receiving an invite
-- performing an emoji verification (bot must run in forground as keyboard input is required)
+`nio` uses callbacks to do work on Matrix events.
+`trappedbot.botclient.botloop` sets callback funtions defined here on the
+`nio.AsyncClient` object it uses.
 &#34;&#34;&#34;
 
 import traceback
@@ -62,9 +60,14 @@ from trappedbot.storage import Storage
 from trappedbot.tasks.builtin import BUILTIN_TASKS
 
 
-# TODO: Consider NOT logging message contents unless passing some kind of --really-log-messages flag or something
 def msglog(logline: str, room: MatrixRoom, event: RoomMessageText):
-    &#34;&#34;&#34;Log a line with room name/user/message metadata&#34;&#34;&#34;
+    &#34;&#34;&#34;Log a line with room name/user/message metadata
+
+    Convenience function.
+
+    TODO: Consider NOT logging message contents unless passing a special flag?
+        Logging messages by default might not be what people expect.
+    &#34;&#34;&#34;
     LOGGER.debug(
         f&#34;{logline} % {room.display_name} | {room.user_name(event.sender)}: {event.body}&#34;
     )
@@ -72,6 +75,9 @@ def msglog(logline: str, room: MatrixRoom, event: RoomMessageText):
 
 def in_dms(room: MatrixRoom) -&gt; bool:
     &#34;&#34;&#34;Are we in DMs, or in a larger room?
+
+    Assume a room with only two members (including our account) is a DM,
+    and a room with more than two members is not.
 
     TODO: is there a better way to determine this?
     &#34;&#34;&#34;
@@ -83,7 +89,11 @@ def in_dms(room: MatrixRoom) -&gt; bool:
 
 
 class Callbacks(object):
-    &#34;&#34;&#34;Collection of all callbacks.&#34;&#34;&#34;
+    &#34;&#34;&#34;Collection of all callbacks.
+
+    Conveniently keeps the `client` and `store` properties so that callbacks
+    can reference them.
+    &#34;&#34;&#34;
 
     def __init__(self, client: AsyncClient, store: Storage):
         &#34;&#34;&#34;Initialize.
@@ -377,6 +387,8 @@ class Callbacks(object):
 </code></dt>
 <dd>
 <div class="desc"><p>Are we in DMs, or in a larger room?</p>
+<p>Assume a room with only two members (including our account) is a DM,
+and a room with more than two members is not.</p>
 <p>TODO: is there a better way to determine this?</p></div>
 <details class="source">
 <summary>
@@ -384,6 +396,9 @@ class Callbacks(object):
 </summary>
 <pre><code class="python">def in_dms(room: MatrixRoom) -&gt; bool:
     &#34;&#34;&#34;Are we in DMs, or in a larger room?
+
+    Assume a room with only two members (including our account) is a DM,
+    and a room with more than two members is not.
 
     TODO: is there a better way to determine this?
     &#34;&#34;&#34;
@@ -398,13 +413,22 @@ class Callbacks(object):
 <span>def <span class="ident">msglog</span></span>(<span>logline: str, room: nio.rooms.MatrixRoom, event: nio.events.room_events.RoomMessageText)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Log a line with room name/user/message metadata</p></div>
+<div class="desc"><p>Log a line with room name/user/message metadata</p>
+<p>Convenience function.</p>
+<p>TODO: Consider NOT logging message contents unless passing a special flag?
+Logging messages by default might not be what people expect.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def msglog(logline: str, room: MatrixRoom, event: RoomMessageText):
-    &#34;&#34;&#34;Log a line with room name/user/message metadata&#34;&#34;&#34;
+    &#34;&#34;&#34;Log a line with room name/user/message metadata
+
+    Convenience function.
+
+    TODO: Consider NOT logging message contents unless passing a special flag?
+        Logging messages by default might not be what people expect.
+    &#34;&#34;&#34;
     LOGGER.debug(
         f&#34;{logline} % {room.display_name} | {room.user_name(event.sender)}: {event.body}&#34;
     )</code></pre>
@@ -421,6 +445,8 @@ class Callbacks(object):
 </code></dt>
 <dd>
 <div class="desc"><p>Collection of all callbacks.</p>
+<p>Conveniently keeps the <code>client</code> and <code>store</code> properties so that callbacks
+can reference them.</p>
 <p>Initialize.</p>
 <h2 id="arguments">Arguments:</h2>
 <pre><code>client (nio.AsyncClient): nio client used to interact with matrix
@@ -431,7 +457,11 @@ store (Storage): Bot storage
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class Callbacks(object):
-    &#34;&#34;&#34;Collection of all callbacks.&#34;&#34;&#34;
+    &#34;&#34;&#34;Collection of all callbacks.
+
+    Conveniently keeps the `client` and `store` properties so that callbacks
+    can reference them.
+    &#34;&#34;&#34;
 
     def __init__(self, client: AsyncClient, store: Storage):
         &#34;&#34;&#34;Initialize.

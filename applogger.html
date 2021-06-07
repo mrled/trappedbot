@@ -22,16 +22,16 @@
 <h1 class="title">Module <code>trappedbot.applogger</code></h1>
 </header>
 <section id="section-intro">
-<p>Global application logger</p>
-<p>Initially the logger is a no-op.
+<p>Global application logger.</p>
+<p>Initially the logger has no handlers, and log messages go nowhere.
 It will be replaced by a real logger during application initialization.</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">&#34;&#34;&#34;Global application logger
+<pre><code class="python">&#34;&#34;&#34;Global application logger.
 
-Initially the logger is a no-op.
+Initially the logger has no handlers, and log messages go nowhere.
 It will be replaced by a real logger during application initialization.
 &#34;&#34;&#34;
 
@@ -42,7 +42,7 @@ import sys
 _LOGGER_NAME = &#34;trappedbot&#34;
 
 
-def _init_logger():
+def _init_logger() -&gt; logging.Logger:
     &#34;&#34;&#34;Initialize the application logger
 
     This is intended to be called just once internally.
@@ -57,12 +57,24 @@ def _init_logger():
     return logger
 
 
-LOGGER = _init_logger()</code></pre>
+LOGGER: logging.Logger = _init_logger()
+&#34;&#34;&#34;The global application logger
+
+A `logging.Logger` object.
+&#34;&#34;&#34;</code></pre>
 </details>
 </section>
 <section>
 </section>
 <section>
+<h2 class="section-title" id="header-variables">Global variables</h2>
+<dl>
+<dt id="trappedbot.applogger.LOGGER"><code class="name">var <span class="ident">LOGGER</span> : logging.Logger</code></dt>
+<dd>
+<div class="desc"><p>The global application logger</p>
+<p>A <code>logging.Logger</code> object.</p></div>
+</dd>
+</dl>
 </section>
 <section>
 </section>
@@ -78,6 +90,11 @@ LOGGER = _init_logger()</code></pre>
 <li><h3>Super-module</h3>
 <ul>
 <li><code><a title="trappedbot" href="index.html">trappedbot</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-variables">Global variables</a></h3>
+<ul class="">
+<li><code><a title="trappedbot.applogger.LOGGER" href="#trappedbot.applogger.LOGGER">LOGGER</a></code></li>
 </ul>
 </li>
 </ul>

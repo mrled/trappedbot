@@ -1,8 +1,8 @@
-"""Implement callbacks for:
+"""Callbacks to give to the `nio.AsyncClient`.
 
-- receiving a text message
-- receiving an invite
-- performing an emoji verification (bot must run in forground as keyboard input is required)
+`nio` uses callbacks to do work on Matrix events.
+`trappedbot.botclient.botloop` sets callback funtions defined here on the
+`nio.AsyncClient` object it uses.
 """
 
 import traceback
@@ -28,9 +28,14 @@ from trappedbot.storage import Storage
 from trappedbot.tasks.builtin import BUILTIN_TASKS
 
 
-# TODO: Consider NOT logging message contents unless passing some kind of --really-log-messages flag or something
 def msglog(logline: str, room: MatrixRoom, event: RoomMessageText):
-    """Log a line with room name/user/message metadata"""
+    """Log a line with room name/user/message metadata
+
+    Convenience function.
+
+    TODO: Consider NOT logging message contents unless passing a special flag?
+        Logging messages by default might not be what people expect.
+    """
     LOGGER.debug(
         f"{logline} % {room.display_name} | {room.user_name(event.sender)}: {event.body}"
     )
@@ -38,6 +43,9 @@ def msglog(logline: str, room: MatrixRoom, event: RoomMessageText):
 
 def in_dms(room: MatrixRoom) -> bool:
     """Are we in DMs, or in a larger room?
+
+    Assume a room with only two members (including our account) is a DM,
+    and a room with more than two members is not.
 
     TODO: is there a better way to determine this?
     """
@@ -49,7 +57,11 @@ def in_dms(room: MatrixRoom) -> bool:
 
 
 class Callbacks(object):
-    """Collection of all callbacks."""
+    """Collection of all callbacks.
+
+    Conveniently keeps the `client` and `store` properties so that callbacks
+    can reference them.
+    """
 
     def __init__(self, client: AsyncClient, store: Storage):
         """Initialize.

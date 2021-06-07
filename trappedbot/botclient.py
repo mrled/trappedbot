@@ -1,4 +1,4 @@
-"""The bot client
+"""The bot client.
 """
 
 from time import sleep
@@ -22,7 +22,20 @@ from trappedbot.storage import Storage
 
 
 async def botloop():
-    """The bot client itself"""
+    """The bot client itself.
+
+    Execute an infinite loop, read the app configuration, and listen for Matrix events.
+
+    Creates a `nio.AsyncClient` and adds callbacks with
+    `nio.AsyncClient.add_event_callback` and
+    `nio.AsyncClient.add_to_device_callback`.
+
+    See the callbacks we define in `trappedbot.callbacks`.
+
+    If the application has not been configured before this function runs,
+    the bot will not have credentials to connect to the Matrix homeserver,
+    and will exit.
+    """
 
     config = appconfig.get()
     store = Storage(config.database_filepath)

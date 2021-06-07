@@ -1,6 +1,6 @@
-"""Global application logger
+"""Global application logger.
 
-Initially the logger is a no-op.
+Initially the logger has no handlers, and log messages go nowhere.
 It will be replaced by a real logger during application initialization.
 """
 
@@ -11,7 +11,7 @@ import sys
 _LOGGER_NAME = "trappedbot"
 
 
-def _init_logger():
+def _init_logger() -> logging.Logger:
     """Initialize the application logger
 
     This is intended to be called just once internally.
@@ -26,4 +26,8 @@ def _init_logger():
     return logger
 
 
-LOGGER = _init_logger()
+LOGGER: logging.Logger = _init_logger()
+"""The global application logger
+
+A `logging.Logger` object.
+"""

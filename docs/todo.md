@@ -18,6 +18,16 @@
     * Don't ask users to care about change_device_name.
     * Allow text responses only in specific rooms
     * Explore hooking up argparse to the bot itself. Replace all my custom command processing crap.
+    * Don't respond to events that happened while the bot was disconnected# TODO: TRY THIS:
+
+        FF777
+        > not sure if this is best, but this is how i do it......by synching once before i do the sync_forever thing:
+
+            await client.sync(timeout=65536, full_state=False)
+            callbacks = Callbacks()
+            client.add_event_callback(callbacks.message_callback, RoomMessageText)
+            await client.sync_forever(timeout=65536, full_state=False)
+
 * Docs
     * Some of the old scripts were just docs placeholders for the user to write a real implementation, e.g. `backup.sh`; write docs instead?
     * Publish somewhere like readthedocs or github pages?

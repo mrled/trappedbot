@@ -10,6 +10,9 @@ This is the implementation of a tiny daemon (in the spiritual, but also computer
 
 ## Local development
 
+API documentation (generated from source code) is available at
+<https://pages.micahrl.com/trappedbot>
+
 Set up an 'editable' environment:
 
 ```sh
@@ -73,7 +76,10 @@ python3 -m http.server
 
 ## Running in production
 
-See the [systemd service definition file example](support/trappedbot.service) for how to run this under systemd.
+* Install non-python [prerequisites](#requirements)
+* Create a Unix user for the bot and su to it
+* Install trappedbot, e.g. `python3 -m pip install --user trappedbot`
+* See the [systemd service definition file example](support/trappedbot.service) for how to run this under systemd.
 
 ## Configuration
 
@@ -88,3 +94,5 @@ You can write custom extensions for `trappedbot` in Python.
 The package exports the `trappedbot.extensions` namespace, which contains interfaces that are guaranteed not to change between major versions. You are welcome to use anything else internal, but implementations may change in minor releases.
 
 Extensions must export a `trappedbot_task` function of the type `trappedbot.tasks.task.TaskFunction`.
+
+See the documentation at <https://pages.micahrl.com/trappedbot/extensions/>

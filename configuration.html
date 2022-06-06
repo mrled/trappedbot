@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
-<meta name="generator" content="pdoc 0.9.2" />
+<meta name="generator" content="pdoc 0.10.0" />
 <title>trappedbot.configuration API documentation</title>
 <meta name="description" content="Implement utility functions for …" />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
@@ -72,6 +72,7 @@ class Configuration(typing.NamedTuple):
     change_device_name: bool = False
     command_prefix: str = &#34;&#34;
     trusted_users: typing.List[str] = []
+    events: typing.Dict[str, &#34;TrappedBotEventAction&#34;] = {}
     commands: typing.Dict[str, &#34;Command&#34;] = {}
     responses: typing.List[&#34;Response&#34;] = []
 
@@ -135,7 +136,7 @@ class Configuration(typing.NamedTuple):
 </dd>
 <dt id="trappedbot.configuration.Configuration"><code class="flex name class">
 <span>class <span class="ident">Configuration</span></span>
-<span>(</span><span>configuration: Dict = {}, config_filepath: str = '', database_filepath: str = '', store_filepath: str = '', user_id: str = '', user_password: str = '', user_access_token: str = '', device_id: str = '', device_name: str = '', homeserver_url: str = '', trust_own_devices: bool = False, change_device_name: bool = False, command_prefix: str = '', trusted_users: List[str] = [], commands: Dict[str, ForwardRef('Command')] = {}, responses: List[ForwardRef('Response')] = [])</span>
+<span>(</span><span>configuration: Dict[~KT, ~VT] = {}, config_filepath: str = '', database_filepath: str = '', store_filepath: str = '', user_id: str = '', user_password: str = '', user_access_token: str = '', device_id: str = '', device_name: str = '', homeserver_url: str = '', trust_own_devices: bool = False, change_device_name: bool = False, command_prefix: str = '', trusted_users: List[str] = [], events: Dict[str, ForwardRef('TrappedBotEventAction')] = {}, commands: Dict[str, ForwardRef('Command')] = {}, responses: List[ForwardRef('Response')] = [])</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Application configuration</p></div>
@@ -160,6 +161,7 @@ class Configuration(typing.NamedTuple):
     change_device_name: bool = False
     command_prefix: str = &#34;&#34;
     trusted_users: typing.List[str] = []
+    events: typing.Dict[str, &#34;TrappedBotEventAction&#34;] = {}
     commands: typing.Dict[str, &#34;Command&#34;] = {}
     responses: typing.List[&#34;Response&#34;] = []
 
@@ -196,7 +198,7 @@ class Configuration(typing.NamedTuple):
 </dd>
 <dt id="trappedbot.configuration.Configuration.commands"><code class="name">var <span class="ident">commands</span></code></dt>
 <dd>
-<div class="desc"><p>Alias for field number 14</p></div>
+<div class="desc"><p>Alias for field number 15</p></div>
 </dd>
 <dt id="trappedbot.configuration.Configuration.config_filepath"><code class="name">var <span class="ident">config_filepath</span></code></dt>
 <dd>
@@ -218,13 +220,17 @@ class Configuration(typing.NamedTuple):
 <dd>
 <div class="desc"><p>Alias for field number 8</p></div>
 </dd>
+<dt id="trappedbot.configuration.Configuration.events"><code class="name">var <span class="ident">events</span></code></dt>
+<dd>
+<div class="desc"><p>Alias for field number 14</p></div>
+</dd>
 <dt id="trappedbot.configuration.Configuration.homeserver_url"><code class="name">var <span class="ident">homeserver_url</span></code></dt>
 <dd>
 <div class="desc"><p>Alias for field number 9</p></div>
 </dd>
 <dt id="trappedbot.configuration.Configuration.responses"><code class="name">var <span class="ident">responses</span></code></dt>
 <dd>
-<div class="desc"><p>Alias for field number 15</p></div>
+<div class="desc"><p>Alias for field number 16</p></div>
 </dd>
 <dt id="trappedbot.configuration.Configuration.store_filepath"><code class="name">var <span class="ident">store_filepath</span></code></dt>
 <dd>
@@ -310,6 +316,7 @@ class Configuration(typing.NamedTuple):
 <li><code><a title="trappedbot.configuration.Configuration.database_filepath" href="#trappedbot.configuration.Configuration.database_filepath">database_filepath</a></code></li>
 <li><code><a title="trappedbot.configuration.Configuration.device_id" href="#trappedbot.configuration.Configuration.device_id">device_id</a></code></li>
 <li><code><a title="trappedbot.configuration.Configuration.device_name" href="#trappedbot.configuration.Configuration.device_name">device_name</a></code></li>
+<li><code><a title="trappedbot.configuration.Configuration.events" href="#trappedbot.configuration.Configuration.events">events</a></code></li>
 <li><code><a title="trappedbot.configuration.Configuration.extension" href="#trappedbot.configuration.Configuration.extension">extension</a></code></li>
 <li><code><a title="trappedbot.configuration.Configuration.homeserver_url" href="#trappedbot.configuration.Configuration.homeserver_url">homeserver_url</a></code></li>
 <li><code><a title="trappedbot.configuration.Configuration.responses" href="#trappedbot.configuration.Configuration.responses">responses</a></code></li>
@@ -327,7 +334,7 @@ class Configuration(typing.NamedTuple):
 </nav>
 </main>
 <footer id="footer">
-<p>Generated by <a href="https://pdoc3.github.io/pdoc"><cite>pdoc</cite> 0.9.2</a>.</p>
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.10.0</a>.</p>
 </footer>
 </body>
 </html>

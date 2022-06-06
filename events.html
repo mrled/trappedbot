@@ -4,8 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
 <meta name="generator" content="pdoc 0.10.0" />
-<title>trappedbot.responses.response_list API documentation</title>
-<meta name="description" content="Response list" />
+<title>trappedbot.events API documentation</title>
+<meta name="description" content="Events inside TrappedBot itself" />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
 <link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/github.min.css" crossorigin>
@@ -19,54 +19,40 @@
 <main>
 <article id="content">
 <header>
-<h1 class="title">Module <code>trappedbot.responses.response_list</code></h1>
+<h1 class="title">Module <code>trappedbot.events</code></h1>
 </header>
 <section id="section-intro">
-<p>Response list</p>
+<p>Events inside TrappedBot itself</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">&#34;&#34;&#34;Response list
-&#34;&#34;&#34;
+<pre><code class="python">&#34;&#34;&#34;Events inside TrappedBot itself&#34;&#34;&#34;
 
-import re
+
 import typing
 
+from nio import AsyncClient
+
 from trappedbot.applogger import LOGGER
-from trappedbot.responses.response import Response
 
 
-def yamlobj2response(idx: int, yamlobj: typing.Dict) -&gt; typing.Optional[Response]:
-    &#34;&#34;&#34;Make a new Response object from a YAML object&#34;&#34;&#34;
-    flags = re.IGNORECASE if yamlobj.get(&#34;ignorecase&#34;, False) else None
-    try:
-        regex_str = yamlobj[&#34;regex&#34;]
-        try:
-            if flags is not None:
-                regex = re.compile(regex_str, flags=flags)
-            else:
-                regex = re.compile(regex_str)
-        except BaseException as exc:
-            LOGGER.critical(
-                f&#34;Failed to compile regex {regex_str} for response definition found at index {idx} with exception {exc}, ignoring...&#34;
-            )
-            return None
-        return Response(regex, yamlobj[&#34;response&#34;])
-    except BaseException:
-        LOGGER.critical(
-            f&#34;Invalid response definition found at index {idx}, ignoring...&#34;
+class EventNotifyAction():
+    &#34;&#34;&#34;An action to notify a room in response to a TrappedBot event&#34;&#34;&#34;
+
+    def __init__(self, event: str, room: str, message: str):
+        self.event = event
+        self.room = room
+        self.message = message
+
+    async def __call__(self, client: AsyncClient):
+        LOGGER.info(f&#34;Running notify action for {self.event}: {self.room}: {self.message}&#34;)
+        result = await client.room_send(
+            room_id=self.room,
+            message_type=&#34;m.room.message&#34;,
+            content={&#34;messagetype&#34;: &#34;m.text&#34;, &#34;body&#34;: self.message}
         )
-        return None
-
-
-def yamlobj2rsplist(responses_yaml_obj: typing.Any) -&gt; typing.List[Response]:
-    &#34;&#34;&#34;Return a ResponseList from a yaml object&#34;&#34;&#34;
-    responses: typing.List[Response] = []
-    for idx, rdefn in enumerate(responses_yaml_obj):
-        if (response := yamlobj2response(idx, rdefn)) :
-            responses.append(response)
-    return responses</code></pre>
+        return result</code></pre>
 </details>
 </section>
 <section>
@@ -74,61 +60,39 @@ def yamlobj2rsplist(responses_yaml_obj: typing.Any) -&gt; typing.List[Response]:
 <section>
 </section>
 <section>
-<h2 class="section-title" id="header-functions">Functions</h2>
+</section>
+<section>
+<h2 class="section-title" id="header-classes">Classes</h2>
 <dl>
-<dt id="trappedbot.responses.response_list.yamlobj2response"><code class="name flex">
-<span>def <span class="ident">yamlobj2response</span></span>(<span>idx: int, yamlobj: Dict[~KT, ~VT]) ‑> Optional[<a title="trappedbot.responses.response.Response" href="response.html#trappedbot.responses.response.Response">Response</a>]</span>
+<dt id="trappedbot.events.EventNotifyAction"><code class="flex name class">
+<span>class <span class="ident">EventNotifyAction</span></span>
+<span>(</span><span>event: str, room: str, message: str)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Make a new Response object from a YAML object</p></div>
+<div class="desc"><p>An action to notify a room in response to a TrappedBot event</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def yamlobj2response(idx: int, yamlobj: typing.Dict) -&gt; typing.Optional[Response]:
-    &#34;&#34;&#34;Make a new Response object from a YAML object&#34;&#34;&#34;
-    flags = re.IGNORECASE if yamlobj.get(&#34;ignorecase&#34;, False) else None
-    try:
-        regex_str = yamlobj[&#34;regex&#34;]
-        try:
-            if flags is not None:
-                regex = re.compile(regex_str, flags=flags)
-            else:
-                regex = re.compile(regex_str)
-        except BaseException as exc:
-            LOGGER.critical(
-                f&#34;Failed to compile regex {regex_str} for response definition found at index {idx} with exception {exc}, ignoring...&#34;
-            )
-            return None
-        return Response(regex, yamlobj[&#34;response&#34;])
-    except BaseException:
-        LOGGER.critical(
-            f&#34;Invalid response definition found at index {idx}, ignoring...&#34;
+<pre><code class="python">class EventNotifyAction():
+    &#34;&#34;&#34;An action to notify a room in response to a TrappedBot event&#34;&#34;&#34;
+
+    def __init__(self, event: str, room: str, message: str):
+        self.event = event
+        self.room = room
+        self.message = message
+
+    async def __call__(self, client: AsyncClient):
+        LOGGER.info(f&#34;Running notify action for {self.event}: {self.room}: {self.message}&#34;)
+        result = await client.room_send(
+            room_id=self.room,
+            message_type=&#34;m.room.message&#34;,
+            content={&#34;messagetype&#34;: &#34;m.text&#34;, &#34;body&#34;: self.message}
         )
-        return None</code></pre>
-</details>
-</dd>
-<dt id="trappedbot.responses.response_list.yamlobj2rsplist"><code class="name flex">
-<span>def <span class="ident">yamlobj2rsplist</span></span>(<span>responses_yaml_obj: Any) ‑> List[<a title="trappedbot.responses.response.Response" href="response.html#trappedbot.responses.response.Response">Response</a>]</span>
-</code></dt>
-<dd>
-<div class="desc"><p>Return a ResponseList from a yaml object</p></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def yamlobj2rsplist(responses_yaml_obj: typing.Any) -&gt; typing.List[Response]:
-    &#34;&#34;&#34;Return a ResponseList from a yaml object&#34;&#34;&#34;
-    responses: typing.List[Response] = []
-    for idx, rdefn in enumerate(responses_yaml_obj):
-        if (response := yamlobj2response(idx, rdefn)) :
-            responses.append(response)
-    return responses</code></pre>
+        return result</code></pre>
 </details>
 </dd>
 </dl>
-</section>
-<section>
 </section>
 </article>
 <nav id="sidebar">
@@ -139,13 +103,14 @@ def yamlobj2rsplist(responses_yaml_obj: typing.Any) -&gt; typing.List[Response]:
 <ul id="index">
 <li><h3>Super-module</h3>
 <ul>
-<li><code><a title="trappedbot.responses" href="index.html">trappedbot.responses</a></code></li>
+<li><code><a title="trappedbot" href="index.html">trappedbot</a></code></li>
 </ul>
 </li>
-<li><h3><a href="#header-functions">Functions</a></h3>
-<ul class="">
-<li><code><a title="trappedbot.responses.response_list.yamlobj2response" href="#trappedbot.responses.response_list.yamlobj2response">yamlobj2response</a></code></li>
-<li><code><a title="trappedbot.responses.response_list.yamlobj2rsplist" href="#trappedbot.responses.response_list.yamlobj2rsplist">yamlobj2rsplist</a></code></li>
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="trappedbot.events.EventNotifyAction" href="#trappedbot.events.EventNotifyAction">EventNotifyAction</a></code></h4>
+</li>
 </ul>
 </li>
 </ul>

@@ -10,6 +10,7 @@ from trappedbot.applogger import LOGGER
 from trappedbot.commands.builtin import BUILTIN_COMMANDS
 from trappedbot.commands.command_list import yamlobj2cmddict
 from trappedbot.configuration import ConfigError, Configuration
+from trappedbot.events import EventNotifyAction
 from trappedbot.responses.response_list import yamlobj2rsplist
 
 
@@ -55,6 +56,17 @@ def parse_config(
     trust_own_devices = configuration["matrix"]["trust_own_devices"]
     change_device_name = configuration["matrix"]["change_device_name"]
 
+    events = {}
+    events_config = configuration.get("events", {})
+    for name, action in events_config.items():
+        events[name] = None
+        print(action)
+        notify = action.get("notify")
+        if notify:
+            events[name] = EventNotifyAction(name, notify['room'], notify['message'])
+        else:
+            raise ConfigError(f"Unknown event action for {name}")
+
     command_prefix = configuration["bot"]["command_prefix"]
     trusted_users = configuration["bot"].get("trusted_users", [])
 
@@ -82,6 +94,7 @@ def parse_config(
         change_device_name=change_device_name,
         command_prefix=command_prefix,
         trusted_users=trusted_users,
+        events=events,
         commands=commands,
         responses=responses,
     )

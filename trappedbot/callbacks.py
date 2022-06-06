@@ -82,6 +82,8 @@ class Callbacks(object):
         """
         config = appconfig.get()
 
+        LOGGER.debug(f"Responding to a message from {event.sender}...")
+
         if event.sender == self.client.user:
             msglog("Ignoring message from myself", room, event)
             return

@@ -49,6 +49,17 @@ logging:
   # CRITICAL, ERROR, WARNING, INFO, DEBUG
   level: INFO
 
+# TrappedBot can perform actions based on internal events
+events:
+  # Currently the only supported event is botstartup
+  botstartup:
+    # Currently the only type of action it can take is the `notify` action, to send a message to a room
+    notify:
+      # The room must be the room key, NOT the friendly name.
+      # (In Element, find this with Room Info -> Room Settings -> Advanced -> Internal room ID)
+      room: "!roomkey:example.com"
+      message: "Just got (re)started and therefore (re)trapped in here!"
+
 # The extension section is used for custom Python extensions
 # If you're writing a custom extension, you can read configuration values from here if appropriate.
 extension:

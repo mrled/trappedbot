@@ -39,6 +39,7 @@ class Configuration(typing.NamedTuple):
     change_device_name: bool = False
     command_prefix: str = ""
     trusted_users: typing.List[str] = []
+    events: typing.Dict[str, "TrappedBotEventAction"] = {}
     commands: typing.Dict[str, "Command"] = {}
     responses: typing.List["Response"] = []
 

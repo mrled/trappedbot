@@ -6,6 +6,7 @@ from time import sleep
 from nio import (
     AsyncClient,
     AsyncClientConfig,
+    RoomMessage,
     RoomMessageText,
     InviteMemberEvent,
     LoginError,
@@ -56,7 +57,7 @@ async def botloop():
     )
 
     callbacks = Callbacks(client, store)
-    client.add_event_callback(callbacks.message, (RoomMessageText,))
+    client.add_event_callback(callbacks.message, (RoomMessage, RoomMessageText,))
     client.add_event_callback(callbacks.invite, (InviteMemberEvent,))
     client.add_to_device_callback(callbacks.to_device_cb, (KeyVerificationEvent,))
 
@@ -82,12 +83,10 @@ async def botloop():
                     if type(login_response) == LoginError:
                         LOGGER.error("Failed to login: " f"{login_response.message}")
                         return False
-                    LOGGER.info(
-                        (
-                            f"access_token of device {config.device_name}"
-                            f' is: "{login_response.access_token}"'
-                        )
+                    LOGGER.debug(
+                        f'access_token of device {config.device_name} is: "{login_response.access_token}"'
                     )
+                    LOGGER.debug(f"Full login_response: {login_response}")
 
             except LocalProtocolError as exc:
                 # There's an edge case here where the user hasn't installed
@@ -134,7 +133,14 @@ async def botloop():
                     )
                     client.verify_device(olm_device)
 
-            await client.sync_forever(timeout=30000, full_state=True)
+            LOGGER.info("Running actions for 'botstartup' event, if any...")
+            botstartup = config.events.get('botstartup', None)
+            if botstartup:
+                await botstartup(client)
+
+            LOGGER.info("Running nio AsyncClient.sync_forever()...")
+            # await client.sync_forever(timeout=30000, full_state=True)
+            await client.sync_forever(timeout=30000)
 
         except (ClientConnectionError, ServerDisconnectedError):
             LOGGER.warning("Unable to connect to homeserver, retrying in 15s...")
